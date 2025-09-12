@@ -2,3 +2,4 @@
 Repository for the SOEN343 HK-X
 
 Rita Kardachian 40283698
+Nayla Nocera 40283927
