@@ -77,5 +77,5 @@ button[type="submit"]:active{transform: translateY(1px);}
     display: none;
     min-height: 18px;
 }
-#msg.success{color: var(--success); display: block;}
+#msg.ok{color: var(--success); display: block;}
 #msg.error{color: var(--danger); display: block;}
