@@ -34,8 +34,8 @@ public class Main {
 
         // Start a trip with sample cost and distance
         Trip trip = new Trip("trip1", bike.getId(), "user1", station, 5.50, 2.3); // $5.50 cost, 2.3 km
-        bike.setBikeStatus("on_trip");
-        dock1.release();
+        dock1.release(); // Release dock before state change
+        bike.setBikeStatus("on_trip"); // This should now work
         station.updateCounts();
         System.out.println("After checkout (trip start): Status: " + station.getStatus() +
                            ", Bikes: " + station.getBikesAvailable() + ", Free Docks: " + station.getFreeDocks() +
@@ -54,7 +54,7 @@ public class Main {
         // Test reservation expiry (simulate time passing)
         System.out.println("Reservation Active: " + reservation.isValid() + " at " + new Date());
         try {
-            Thread.sleep(61000); // Wait > 1 minute to expire
+            Thread.sleep(1000); // 1 second delay
             reservation.checkExpiry();
             System.out.println("After expiry wait: Reservation Active: " + reservation.isValid() + " at " + new Date());
         } catch (InterruptedException e) {

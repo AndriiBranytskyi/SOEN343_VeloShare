@@ -1,4 +1,5 @@
 package com.veloshare.domain;
+
 import java.util.Date;
 
 public class Bike {
@@ -19,16 +20,16 @@ public class Bike {
     public void setBikeStatus(String state) {
         // Add state transition validation
         if ("reserved".equals(this.state) && "on_trip".equals(state)) {
-            if (reservationExpiry == null || new Date().after(reservationExpiry)) {
-                this.state = state; // Allow transition if reservation expired or not set
-            } else {
-                throw new IllegalStateException("Invalid state transition for bike " + id +
-                                               ": Reservation still active until " + reservationExpiry);
-            }
+            // Allow transition to on_trip if reserved, consuming the reservation
+            this.state = state;
+            this.reservationExpiry = null; // Clear reservation after use
         } else if ("available".equals(this.state) && "reserved".equals(state)) {
             this.state = state; // Allow reserving from available
         } else if ("on_trip".equals(this.state) && "available".equals(state)) {
             this.state = state; // Allow returning to available
+        } else if (this.reservationExpiry != null && new Date().before(this.reservationExpiry)) {
+            throw new IllegalStateException("Invalid state transition for bike " + id +
+                                           ": Reservation still active until " + reservationExpiry);
         } else {
             throw new IllegalStateException("Invalid state transition for bike " + id +
                                            ": Cannot move from " + this.state + " to " + state);
