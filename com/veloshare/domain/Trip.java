@@ -20,8 +20,8 @@ public class Trip {
         this.startStation = startStation;
         this.endTime = null;
         this.endStation = null;
-        this.cost = 0.0;
-        this.distanceKM = 0.0;
+        this.cost = cost;
+        this.distanceKM = distanceKM;
 
     }
     public String getTripId() { 
