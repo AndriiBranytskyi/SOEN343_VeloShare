@@ -2,57 +2,48 @@
 
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Register</title>
-        <link rel="stylesheet" href="styles.css">
-    </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <form id="registerForm">
+    <h1>Create your account</h1>
 
-    <body>
-        
-        <!-- UI layer -->
-        <form id="registerForm">
-            <h1>Create your account</h1>
-            <!-- labels for Username, password, email, full name, address, payment information. -->
-            <label>Full name
-                <input name="fullName" type="text" required>
-            </label>
-            <br>
+    <label>Full name
+      <input id="fullName" name="fullName" type="text" required />
+    </label>
 
-            <label>Email
-                <input name="email" type="email" required>
-                <small id="emailStatus" class="help"></small>
-            </label>
-            <br>
+    <label>Email
+      <input id="email" name="email" type="email" required />
+      <small id="emailStatus" class="help"></small>
+    </label>
 
-            <label>Payment information
-                <input name="paymentInfo" type="text" required>
-            </label>
-            <br>
+    <label>Payment information
+      <input id="paymentInfo" name="paymentInfo" type="text" required />
+    </label>
 
-            <label>Address
-                <input name="address" type="text" required>
-            </label>
-            <br>
+    <label>Address
+      <input id="address" name="address" type="text" required />
+    </label>
 
-            <label>Username
-                <input name="username" type="text" required>
-                <small id="usernameStatus" class="help"></small>
-            </label>
-            <br>
+    <label>Username
+      <input id="username" name="username" type="text" required />
+      <small id="usernameStatus" class="help"></small>
+    </label>
 
-            <label>Password
-                <input name="password" type="password" required>
-            </label>
+    <label>Password
+      <input id="password" name="password" type="password" required />
+    </label>
 
-            <button type="submit">Register</button>
-            <p id="registerMsg"></p>
-        </form>
-        <script src="./auth.js"></script>
-    </body>
+    <button type="submit">Register</button>
+    <p id="registerMsg"></p>
+  </form>
 
-    
-
-
+  <!-- Your app logic (ES modules) -->
+  <script type="module" src="./firebase.js"></script>
+  <script type="module" src="./auth.js"></script>
+</body>
 </html>
