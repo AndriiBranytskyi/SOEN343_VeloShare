@@ -11,19 +11,21 @@ public class Trip {
     private Station endStation;
     private double cost;
     private double distanceKM;
+    private boolean isActive;
+    private Bike bike;
 
-    public Trip(String tripId, String bikeId, String userId, Station startStation, double cost, double distanceKM) {
+    public Trip(String tripId, String bikeId, String userId, Station startStation, double cost, double distanceKM, Bike bike) {
         this.tripId = tripId;
         this.bikeId = bikeId;
         this.userId = userId;
-        this.startTime = new Date();
         this.startStation = startStation;
-        this.endTime = null;
-        this.endStation = null;
         this.cost = cost;
         this.distanceKM = distanceKM;
-
+        this.startTime = new Date();
+        this.isActive = true;
+        this.bike = bike;
     }
+
     public String getTripId() { 
         return tripId; 
     }
@@ -47,37 +49,17 @@ public class Trip {
         return distanceKM; 
     }
 
-    public void setEndTime(Date endTime) { 
-        this.endTime = endTime; 
-    }
-    public Station getStartStation() { 
-        return startStation; 
-    }
-    public Station getEndStation() { 
-        return endStation; 
+    public boolean isActive() {
+        return isActive;
     }
 
-
-    public void setEndStation(Station endStation) { 
-        this.endStation = endStation; 
+    public Bike getBike() {
+        return bike;
     }
 
     public void endTrip(Station endStation) {
-        this.endTime = new Date();
         this.endStation = endStation;
+        this.endTime = new Date();
+        this.isActive = false;
     }
-
-    public boolean isActive() {
-        return endTime == null;
-    }
-
-    // duration in min
-    public long getDuration() {
-        if (endTime != null) {
-            return (endTime.getTime() - startTime.getTime()) / (1000 * 60); 
-        }
-        return -1;
-    }
-
- 
 }

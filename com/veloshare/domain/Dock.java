@@ -1,56 +1,62 @@
 package com.veloshare.domain;
 
-
-import com.veloshare.domain.Bike;
 public class Dock {
-    private String id;
-    private String state; 
+    private int dockId;
     private Bike bike;
+    private int position; 
+    private DockStatus status;
 
-    public Dock(String id) {
-        this.id = id;
-        this.state = "empty";
+    public Dock(int dockId, int position) {
+        this.dockId = dockId;
+        this.position = position;
+        this.status = DockStatus.FREE;
         this.bike = null;
     }
 
-    public String getId() { 
-        return id; 
+    public int getId() { 
+        return dockId; 
     }
-    public String getState() { 
-        return state; 
+    public int getPosition() { 
+        return position; 
     }
-    public void setState(String state) { 
-        this.state = state; 
+    public Bike getBike() {
+        return bike;
     }
-    public Bike getBike() { 
-        return bike; 
-    }
-    public void setBike(Bike bike) { 
-        this.bike = bike; 
+
+    public DockStatus getStatus() { 
+        return status;
+     }
+
+     public boolean isOccupied() { 
+        return status == DockStatus.OCCUPIED; 
     }
 
     public void occupy(Bike bike) {
-        if (!"out_of_service".equals(state)) {
-            this.state = "occupied";
-            this.bike = bike;
-        } else {
-            throw new IllegalStateException("Dock " + id + " is out of service");
+        if (this.bike != null || this.status != DockStatus.FREE) {
+            throw new IllegalStateException("Dock " + dockId + " is already occupied");
         }
+        this.bike = bike;
+        this.status = DockStatus.OCCUPIED;
     }
 
-    public Bike release() {
-        if ("occupied".equals(state)) {
-            Bike temp = bike;
-            this.state = "empty";
-            this.bike = null;
-            return temp;
+    public void release() {
+        if (this.bike == null || this.status != DockStatus.OCCUPIED) {
+            throw new IllegalStateException("Dock " + dockId + " is already empty");
         }
-        return null;
+        this.bike = null;
+        this.status = DockStatus.FREE;
     }
 
-    public boolean isOutOfService() {
-        return "out_of_service".equals(state);
+    public void setOutOfService() {
+        if (this.bike != null) {
+            throw new IllegalStateException("Cannot choose occupied dock " + dockId + " out of service");
+        }
+        this.status = DockStatus.OUT_OF_SERVICE;
     }
+}
 
-    
+enum DockStatus {
+    FREE,
+    OCCUPIED,
+    OUT_OF_SERVICE
 }

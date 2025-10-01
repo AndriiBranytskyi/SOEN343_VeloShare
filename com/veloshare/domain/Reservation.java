@@ -9,12 +9,12 @@ public class Reservation {
     private Date expiresAt;
     private boolean isActive;
 
-    public Reservation(String reservationId, String bikeId, String userId, int holdMinutes) {
+    public Reservation(String reservationId, String bikeId, String userId, int durationMinutes) {
         this.reservationId = reservationId;
         this.bikeId = bikeId;
         this.userId = userId;
         this.createdAt = new Date();
-        this.expiresAt = new Date(System.currentTimeMillis() + holdMinutes * 60000);
+        this.expiresAt = new Date(System.currentTimeMillis() + (long)(durationMinutes * 60000)); // Convert minutes to ms
         this.isActive = true;
     }
 
