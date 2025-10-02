@@ -13,7 +13,7 @@ public class Dock {
         this.bike = null;
     }
 
-    public int getId() { 
+    public int getDockId() { 
         return dockId; 
     }
     public int getPosition() { 

@@ -38,6 +38,16 @@ public class Trip {
     public Date getStartTime() { 
         return startTime; 
     }
+
+    public Station getStartStation() {
+        return startStation;
+    }
+
+    public Station getEndStation() {
+        return endStation;
+    }
+
+
     public Date getEndTime() { 
         return endTime; 
     }

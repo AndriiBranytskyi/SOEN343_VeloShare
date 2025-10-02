@@ -9,7 +9,7 @@ public class Reservation {
     private Date expiresAt;
     private boolean isActive;
 
-    public Reservation(String reservationId, String bikeId, String userId, int durationMinutes) {
+    public Reservation(String reservationId, String bikeId, String userId, double durationMinutes) {
         this.reservationId = reservationId;
         this.bikeId = bikeId;
         this.userId = userId;

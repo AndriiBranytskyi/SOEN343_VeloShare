@@ -7,12 +7,14 @@ public class User {
     private String userId;
     private String name;
     private double balance;
+    private Role role;
     private List<Trip> trips;
 
-    public User(String userId, String name) {
+    public User(String userId, String name, Role role) {
         this.userId = userId;
         this.name = name;
         this.balance = 0.0;
+        this.role = role;
         this.trips = new ArrayList<>();
     }
 
@@ -34,5 +36,8 @@ public class User {
     }
     public void deductBalance(double amount) { 
         balance -= amount; 
+    }
+    public Role getRole() { 
+        return role; 
     }
 }
