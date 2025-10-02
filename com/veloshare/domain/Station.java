@@ -45,4 +45,15 @@ public class Station {
     public void updateCounts() {
         // empty for now
     }
+    public boolean isFull() {
+        return getFreeDocks() == 0;
+    }
+
+    public boolean isEmpty() {
+        return getBikesAvailable() == 0;
+    }
+
+    public void setOutOfService(boolean oos) {
+        // Update logic as needed
+    }
 }

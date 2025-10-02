@@ -34,19 +34,28 @@ public class Bike {
     public void endTrip() {
         state.endTrip();
     }
+    public void cancelReservation() {
+        state.cancelReservation(); // Delegate to state
+    }
+
+    public void setMaintenance() {
+        state.setMaintenance();
+    }
    
     void setState(BikeState state) { 
         this.state = state;
     }
-}
 
-interface BikeState {
-    void reserve(Date expiry);
-    void startTrip();
-    void endTrip();
-}
+    interface BikeState {
+        void reserve(Date expiry);
+        void startTrip();
+        void endTrip();
+        void cancelReservation();
+        void setMaintenance();
+    }
 
-class AvailableState implements BikeState {
+
+private class AvailableState implements BikeState {
     private Bike bike;
 
     public AvailableState(Bike bike) { 
@@ -61,9 +70,17 @@ class AvailableState implements BikeState {
     public void endTrip() { 
         throw new IllegalStateException("Cannot end trip from available state"); 
     }
+    public void cancelReservation() {
+        throw new IllegalStateException("Cannot cancel reservation from available state");
+    }
+    public void setMaintenance() { 
+        bike.setState(new MaintenanceState(bike)); 
+    }
+
+    
 }
 
-class ReservedState implements BikeState {
+private class ReservedState implements BikeState {
     private Bike bike;
     private Date expiry;
 
@@ -85,9 +102,18 @@ class ReservedState implements BikeState {
     public void endTrip() { 
         throw new IllegalStateException("Cannot end trip from reserved state"); 
     }
+
+    public void cancelReservation() {
+        bike.state = new AvailableState(bike); // Transition to Available
+        System.out.println("Bike " + bike.id + " state after cancellation: " + bike.getState()); // Debug
+    }
+
+    public void setMaintenance() { 
+        throw new IllegalStateException("Cannot set maintenance from reserved state"); 
+    }
 }
 
-class OnTripState implements BikeState {
+private class OnTripState implements BikeState {
     private Bike bike;
 
     public OnTripState(Bike bike) { 
@@ -102,4 +128,29 @@ class OnTripState implements BikeState {
     public void endTrip() { 
         bike.setState(new AvailableState(bike)); 
     }
+    public void cancelReservation() {
+        throw new IllegalStateException("Cannot cancel reservation during trip");
+    }
+
+    public void setMaintenance() { 
+        throw new IllegalStateException("Cannot set maintenance during trip"); }
+   
+}
+private class MaintenanceState implements BikeState {
+    private Bike bike;
+
+    public MaintenanceState(Bike bike) { 
+        this.bike = bike; 
+    }
+    public void reserve(Date expiry) { 
+        throw new IllegalStateException("Cannot reserve in maintenance"); }
+    public void startTrip() { 
+        throw new IllegalStateException("Cannot start trip in maintenance"); }
+    public void endTrip() { 
+        throw new IllegalStateException("Cannot end trip in maintenance"); }
+    public void cancelReservation() { 
+        throw new IllegalStateException("Cannot cancel reservation in maintenance"); }
+    public void setMaintenance() {
+        throw new IllegalStateException("Already in maintenance"); }
+}
 }

@@ -1,0 +1,10 @@
+{
+    "stations": [
+      {
+        "name": "Station A",
+        "latitude": 45.5,
+        "longitude": -73.5,
+        "capacity": 2
+      }
+    ]
+  }
