@@ -16,7 +16,7 @@ const exists = async (path) => (await get(ref(db, path))).exists();
 const emailExists = (email) => exists(`emails/${emailKey(email)}`);
 const usernameExists = (u) => exists(`usernames/${u.trim().toLowerCase()}`);
 
-/* ---------- registration (same as yours; unchanged except for text) ---------- */
+
 const registerForm = document.getElementById("registerForm");
 if (registerForm) {
   const registerMsg    = document.getElementById("registerMsg");
@@ -98,7 +98,7 @@ if (loginForm) {
 
   const POST_LOGIN_REDIRECT = "index.html";
 
-  // remove if you dont want to auto-redirect logged-in users away from login page
+//   auto-redirect if already logged in
   onAuthStateChanged(auth, (user) => {
     if (user) window.location.replace(POST_LOGIN_REDIRECT);
   });
@@ -159,7 +159,7 @@ if (loginForm) {
 const logoutBtn = document.getElementById("logoutBtn");
 if (logoutBtn) {
   logoutBtn.addEventListener("click", async () => {
-    console.log("Logout button clicked"); // 👈 add this
+    console.log("Logout button clicked");
     try {
       await signOut(auth);
       // Redirect back to login page
