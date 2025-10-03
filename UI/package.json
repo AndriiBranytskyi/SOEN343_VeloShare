@@ -1,0 +1,6 @@
+{
+  "name": "@veloshare/ui",
+  "version": "1.0.0",
+  "description": "VeloShare static UI (HTML/CSS/JS)",
+  "private": true
+}
