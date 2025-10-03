@@ -132,28 +132,6 @@ if (loginForm) {
     }
   });
 
-  forgotBtn?.addEventListener("click", async (e) => {
-    e.preventDefault();
-    const email = emailEl.value.trim();
-    if (!isValidEmail(email)) {
-      loginMsg.className = "error";
-      loginMsg.textContent = "Enter your email above, then click ‘Forgot password?’";
-      return;
-    }
-    try {
-      await sendPasswordResetEmail(auth, email);
-      loginMsg.className = "ok";
-      loginMsg.textContent = "📧 Password reset email sent.";
-    } catch (err) {
-      console.error(err);
-      const msg =
-        err.code === "auth/user-not-found" ? "No account with that email." :
-        err.message || "Could not send reset email.";
-      loginMsg.className = "error";
-      loginMsg.textContent = `❌ ${msg}`;
-    }
-  });
-}
 
 // Logout button
 const logoutBtn = document.getElementById("logoutBtn");
