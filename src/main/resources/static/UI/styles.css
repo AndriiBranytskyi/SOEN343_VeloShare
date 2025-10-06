@@ -1,3 +1,35 @@
+/* home Page */
+.homepage-header {
+    text-align: center;
+    margin-top: 50px;
+  }
+  
+  nav {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .home-link {
+    background-color: var(--buttons);
+    color: white;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-size: 16px;
+    transition: filter 0.2s ease;
+  }
+  
+  .home-link:hover {
+    filter: brightness(1.1);
+  }
+  
+  .home-link:active {
+    transform: translateY(1px);
+  }
+
+
 :root{
     --page: #0f172a;  /*page background*/
     --form: #1e293b; /*form background*/
@@ -79,3 +111,22 @@ button[type="submit"]:active{transform: translateY(1px);}
 }
 #msg.ok{color: var(--success); display: block;}
 #msg.error{color: var(--danger); display: block;}
+
+
+/* Logout button */
+#logoutBtn {
+    position: fixed;       /* make it float over the page */
+    bottom: 20px;          
+    left: 20px;            
+    background-color: var(--buttons);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  #logoutBtn:hover {
+    filter: brightness(1.1);
+  }

@@ -1,101 +1,151 @@
-// for register
+// auth.js
+import { db, auth } from "./firebase.js";
+import { ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-console.log("auth.js loaded!");
+/* ---------- shared helpers ---------- */
+const emailKey = (e) => e.trim().toLowerCase().replace(/\./g, ",");
+const isValidEmail = (e) => !!e && e.includes("@") && e.includes(".");
+const exists = async (path) => (await get(ref(db, path))).exists();
+const emailExists = (email) => exists(`emails/${emailKey(email)}`);
+const usernameExists = (u) => exists(`usernames/${u.trim().toLowerCase()}`);
 
-// getting the form from register
-const registerForm = document.getElementById('registerForm');
-const registerMsg  = document.getElementById('registerMsg');
 
-// validate the input fields of email and username
-const emailInput    = registerForm.email;
-const usernameInput = registerForm.username;
+const registerForm = document.getElementById("registerForm");
+if (registerForm) {
+  const registerMsg    = document.getElementById("registerMsg");
+  const emailInput     = registerForm.email;
+  const usernameInput  = registerForm.username;
+  const emailStatus    = document.getElementById("emailStatus");
+  const usernameStatus = document.getElementById("usernameStatus");
 
-// email and username status
-const emailStatus    = document.getElementById('emailStatus');
-const usernameStatus = document.getElementById('usernameStatus');
+  emailInput?.addEventListener("blur", async () => {
+    const email = emailInput.value.trim();
+    if (!isValidEmail(email)) { emailStatus.textContent = "Invalid email format"; emailStatus.className = "error"; return; }
+    emailStatus.textContent = "Checking…";
+    const taken = await emailExists(email);
+    emailStatus.textContent = taken ? "Email is already taken" : "Email is available";
+    emailStatus.className   = taken ? "error" : "ok";
+  });
 
-// helper functions
-// email format check
-const isValidEmail = (e) => e && e.includes('@') && e.includes('.');
+  usernameInput?.addEventListener("blur", async () => {
+    const u = usernameInput.value.trim().toLowerCase();
+    if (u.length < 3) { usernameStatus.textContent = "Username too short"; usernameStatus.className = "error"; return; }
+    usernameStatus.textContent = "Checking…";
+    const taken = await usernameExists(u);
+    usernameStatus.textContent = taken ? "Username is already taken" : "Username is available";
+    usernameStatus.className   = taken ? "error" : "ok";
+  });
 
-// check if email is available from backend
-async function checkEmailAvailability(email) {
-  try {
-    const res = await fetch(`/api/auth/availability/email?value=${encodeURIComponent(email)}`);
-    if (!res.ok) throw new Error('Server error');
-    const data = await res.json();
-    return data.available; // true if available, false if taken
-  } catch (err) {
-    console.error('Email check failed', err);
-    return false; // assume taken if error
-  }
+  registerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const fullName    = registerForm.fullName.value.trim();
+    const email       = registerForm.email.value.trim();
+    const paymentInfo = registerForm.paymentInfo.value.trim();
+    const address     = registerForm.address.value.trim();
+    const username    = registerForm.username.value.trim().toLowerCase();
+    const password    = registerForm.password.value.trim();
+
+    if (!fullName || !paymentInfo || !address || !isValidEmail(email) || username.length < 3) {
+      registerMsg.className = "error"; registerMsg.textContent = "Please fill all fields correctly."; return;
+    }
+
+    const [emailTaken, userTaken] = await Promise.all([emailExists(email), usernameExists(username)]);
+    if (emailTaken || userTaken) { registerMsg.className = "error"; registerMsg.textContent = "Email or username already taken."; return; }
+
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      const uid = cred.user.uid;
+
+      const userData = { uid, fullName, email, username, paymentInfo, address, createdAt: Date.now() };
+      await update(ref(db), {
+        [`users/${uid}`]: userData,
+        [`usernames/${username}`]: uid,
+        [`emails/${emailKey(email)}`]: uid
+      });
+
+      registerMsg.className = "ok";
+      registerMsg.innerHTML = "✅ Registration successful! Redirecting to login…";
+      setTimeout(() => { window.location.href = "LoginPage.html"; }, 1500);
+    } catch (err) {
+      console.error(err);
+      const msg =
+        err.code === "auth/email-already-in-use" ? "Email already in use." :
+        err.code === "auth/invalid-email"        ? "Invalid email." :
+        err.code === "auth/weak-password"        ? "Password is too weak." :
+        err.message || "Registration failed.";
+      registerMsg.className = "error";
+      registerMsg.textContent = `❌ ${msg}`;
+    }
+  });
 }
 
-// check if username is available from backend
-async function checkUsernameAvailability(username) {
-  try {
-    const res = await fetch(`/api/auth/availability/username?value=${encodeURIComponent(username)}`);
-    if (!res.ok) throw new Error('Server error');
-    const data = await res.json();
-    return data.available;
-  } catch (err) {
-    console.log('Username check failed', err);
-    return false; // assume taken if error
-  }
+/* ---------- login ---------- */
+const loginForm = document.getElementById("loginForm");
+if (loginForm) {
+  const loginMsg  = document.getElementById("loginMsg");
+  const emailEl   = document.getElementById("loginEmail");
+  const passEl    = document.getElementById("loginPassword");
+  const forgotBtn = document.getElementById("forgotPassword");
+
+
+  const POST_LOGIN_REDIRECT = "index.html";
+
+//   auto-redirect if already logged in
+  onAuthStateChanged(auth, (user) => {
+    if (user) window.location.replace(POST_LOGIN_REDIRECT);
+  });
+
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = emailEl.value.trim();
+    const pass  = passEl.value.trim();
+
+    if (!isValidEmail(email) || !pass) {
+      loginMsg.className = "error";
+      loginMsg.textContent = "Enter a valid email and password.";
+      return;
+    }
+
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+      loginMsg.className = "ok";
+      loginMsg.textContent = "✅ Logged in! Redirecting…";
+      setTimeout(() => { window.location.href = POST_LOGIN_REDIRECT; }, 800);
+    } catch (err) {
+      console.error(err);
+      const msg =
+        err.code === "auth/invalid-email"  ? "Invalid email address." :
+        err.code === "auth/user-disabled"  ? "This account is disabled." :
+        err.code === "auth/user-not-found" ? "No account with that email." :
+        err.code === "auth/wrong-password" ? "Incorrect password." :
+        err.message || "Login failed.";
+      loginMsg.className = "error";
+      loginMsg.textContent = `❌ ${msg}`;
+    }
+  });
+
+
+// Logout button
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    console.log("Logout button clicked");
+    try {
+      await signOut(auth);
+      // Redirect back to login page
+      window.location.href = "HomePage.html";
+    } catch (err) {
+      console.error("Logout failed", err);
+      alert("Could not log out, please try again.");
+    }
+  });
 }
-
-// validate email and username while typing (on blur)
-emailInput.addEventListener("blur", async () => {
-  if (!isValidEmail(emailInput.value)) {
-    emailStatus.textContent = 'Invalid email format';
-    emailStatus.className = 'error';
-    return;
-  }
-  const available = await checkEmailAvailability(emailInput.value);
-  if (available) {
-    emailStatus.textContent = 'Email is available';
-    emailStatus.className = 'ok';
-  } else {
-    emailStatus.textContent = 'Email is already taken';
-    emailStatus.className = 'error';
-  }
-});
-
-usernameInput.addEventListener("blur", async () => {
-  if (usernameInput.value.trim().length < 3) {
-    usernameStatus.textContent = 'Username too short';
-    usernameStatus.className = 'error';
-    return;
-  }
-  const available = await checkUsernameAvailability(usernameInput.value);
-  if (available) {
-    usernameStatus.textContent = 'Username is available';
-    usernameStatus.className = 'ok';
-  } else {
-    usernameStatus.textContent = "Username is already taken";
-    usernameStatus.className = 'error';
-  }
-});
-
-// add a submit handler for when the form is submitted
-registerForm.addEventListener('submit', async (event) => {
-  event.preventDefault(); // prevent the default form submission behavior
-
-  // run availability checks again before submitting
-  const emailAvailable    = await checkEmailAvailability(emailInput.value);
-  const usernameAvailable = await checkUsernameAvailability(usernameInput.value);
-
-  if (!emailAvailable || !usernameAvailable) {
-    registerMsg.className = 'error';
-    registerMsg.textContent = 'Please fix any errors before registering';
-    return;
-  }
-
-  // if both email and username are available --> success
-  registerMsg.className = 'ok';
-  registerMsg.textContent = 'Account created successfully, please sign in!';
-
-  console.log('registration ready to be sent to backend');
-
-  // TODO: build payload and POST to /api/auth/register
-});
+}
