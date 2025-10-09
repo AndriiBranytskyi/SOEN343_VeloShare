@@ -5,7 +5,11 @@ Repository for the SOEN343 HK-X
 VeloShare is a website that allows users to temporarily rent a bike or e-bike for personal usage.
 
 ## Instructions to run
-//TODO
+1. Prerequisits: Java 17+, Apache Maven
+2. Dowload project for GitHub
+3. Navigate to root folder and biuld the project: "mvn clean install"
+4. Run the backend server with "mvn spring-boot:run"
+5. In browser go to http://localhost:8080/UI/HomePage.html
 
 ## Technology & Tools
 - **Version Control:** GitHub   
