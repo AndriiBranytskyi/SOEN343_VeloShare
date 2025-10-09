@@ -1,0 +1,12 @@
+{
+  "stations": [
+    {
+      "name": "Station A",
+      "latitude": 45.5,
+      "longitude": -73.6,
+      "capacity": 2,
+      "bikes": [{ "id": "bike1", "type": "standard" }]
+    }
+  ],
+  "expiresAfterMinutes": 10
+}
