@@ -15,11 +15,11 @@ public class TripService {
         this.bms = bms;
     }
 
-    public Result<Void> startTrip(StartTripCmd cmd, User user) {
+    public Result<String> startTrip(StartTripCmd cmd, User user) {
         try {
             Station s = bms.requireStation(cmd.stationName());
-            bms.startTrip(cmd.userId(), cmd.bikeId(), s, cmd.estimatedCost(), cmd.estimatedDistance(), user);
-            return Result.ok(null);
+            String tripId = bms.startTrip(cmd.userId(), cmd.bikeId(), s, cmd.estimatedCost(), cmd.estimatedDistance(), user);
+            return Result.ok(tripId);
         } catch (IllegalAccessException e) {
             return Result.fail("Forbidden: " + e.getMessage());
         } catch (Exception e) {

@@ -26,4 +26,23 @@ public class OperatorService {
             return Result.fail(e.getMessage());
         }
     }
+
+    public Result<Void> setStationOutOfService(String stationName, boolean oos, User operator) {
+        try {
+            Station s = bms.requireStation(stationName);
+            bms.setStationOutOfService(s, oos);
+            return Result.ok(null);
+        } catch (Exception e) {
+            return Result.fail(e.getMessage());
+        }
+    }
+
+    public Result<Void> setBikeMaintenance(String bikeId, boolean maintenance, User operator) {
+        try {
+            bms.setBikeMaintenance(bikeId, maintenance);
+            return Result.ok(null);
+        } catch (Exception e) {
+            return Result.fail(e.getMessage());
+        }
+    }
 }

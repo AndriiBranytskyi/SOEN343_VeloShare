@@ -10,6 +10,7 @@ public class Station {
     private double longitude;
     private int capacity;
     private List<Dock> docks;
+    private boolean outOfService;
 
     public Station(String name, double latitude, double longitude, int capacity) {
         this.name = name;
@@ -63,6 +64,11 @@ public class Station {
     }
 
     public void setOutOfService(boolean oos) {
-        // Update logic as needed
+        this.outOfService = oos;
     }
+
+    public boolean isOutOfService() {
+        return outOfService;
+    }
+
 }
