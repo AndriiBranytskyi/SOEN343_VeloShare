@@ -1,33 +1,19 @@
 # SOEN343_VeloShare
 Repository for the SOEN343 HK-X
 
-
 ## Description
-VeloShare is a webite that allows users to rent a bike from a current bike station and then return it after use. Users can rent a bike from any station and can return the bike to another station.
+VeloShare is a webite that allows users to temporarily rent a bike or e-bike for person usage.
 
-Phase 1
-The goal of this phase is to:
-- Define the problem and product scope.
-- Provide a clear product position statement.
-- Outline assumptions and dependencies.
-- Design a **context diagram** and **domain model** to represent the system at a high level.
-
----
-
-## Features 
-
-
----
+## Instructions to run
+//TODO
 
 ## Technology & Tools
-- **Version Control:** GitHub (private repository)  
-- **Collaboration:** GitHub Issues for tasks/bugs, team coordination  
+- **Version Control:** GitHub   
+- **Collaboration:** GitHub Issues for tasks/bugs, team coordination, Discord 
 - **Diagramming:** draw.io
 - **Languages:**
   - Backend: Java 
   - Frontend: JavaScript 
-
----
 
 ## Team members
 
