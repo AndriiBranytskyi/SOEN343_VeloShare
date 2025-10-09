@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.veloshare.api.security.CurrentUserProvider;
 import com.veloshare.application.dto.ReserveBikeCmd;
 import com.veloshare.application.usecases.ReservationService;
 
@@ -16,14 +17,16 @@ import com.veloshare.application.usecases.ReservationService;
 public class ReservationController {
 
     private final ReservationService reservations;
+    private final CurrentUserProvider current;
 
-    public ReservationController(ReservationService reservations) {
+    public ReservationController(ReservationService reservations, CurrentUserProvider current) {
         this.reservations = reservations;
+        this.current = current;
     }
 
     @PostMapping
     public ResponseEntity<?> reserve(@RequestBody ReserveBikeReq req) {
-        var r = reservations.get(new ReserveBikeCmd(req.userId(), req.bikeId(), req.stationName(), req.minutes()));
+        var r = reservations.reserve(new ReserveBikeCmd(req.userId(), req.bikeId(), req.stationName(), req.minutes()));
         return r.isOk() ? ResponseEntity.ok().build() : ResponseEntity.badRequest().body(r.getError());
     }
 

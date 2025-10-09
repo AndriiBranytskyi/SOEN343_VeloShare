@@ -1,13 +1,370 @@
-<!-- redirect to page after successfully logging in -->
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VeloShare Main Page</title>
-    <link rel="stylesheet" href="./styles.css">
-</head>
-<body>
-    <h1>Main Page</h1>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>VeloShare Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      :root {
+        --bg: #0f172a;
+        --card: #1e293b;
+        --text: #f1f5f9;
+        --muted: #94a3b8;
+        --accent: #3b82f6;
+        --border: #334155;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 24px;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial,
+          sans-serif;
+        display: flex;
+        justify-content: center;
+      }
+      .wrap {
+        width: 100%;
+        max-width: 1024px;
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+      .topbar h1 {
+        font-size: 22px;
+        margin: 0;
+        font-weight: 600;
+      }
+      #userBadge {
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 16px;
+      }
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        background: var(--card);
+      }
+      .card h2 {
+        margin: 0 0 12px 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .row input,
+      .row select {
+        flex: 1 1 160px;
+        min-width: 150px;
+        max-width: 100%;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--text);
+      }
+      button {
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--accent);
+        color: #fff;
+        cursor: pointer;
+        flex: 0 0 auto;
+      }
+      button:hover {
+        filter: brightness(1.1);
+      }
+      #out {
+        white-space: pre-wrap;
+        background: var(--bg);
+        color: var(--muted);
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
+      /* Hide operator card by default; JS will enable if role=OPERATOR */
+      #card-ops {
+        display: none;
+      }
+      #card-ops-admin {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="topbar">
+        <h1>VeloShare Dashboard</h1>
+        <div id="userBadge">Not signed in</div>
+      </header>
+
+      <section class="cards">
+        <div class="card">
+          <h2>Station status</h2>
+          <div class="row">
+            <input id="stationName" value="Station A" />
+            <button id="btnLoadStation">Load</button>
+          </div>
+          <pre id="station" style="margin-top: 10px"></pre>
+        </div>
+
+        <div class="card">
+          <h2>Reserve bike</h2>
+          <div class="row">
+            <input id="userId" placeholder="(optional) userId" />
+            <input id="bikeId" value="bike1" />
+            <input id="reserveStation" value="Station A" />
+            <input id="minutes" type="number" value="10" />
+            <button id="btnReserve">Reserve</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Start trip</h2>
+          <div class="row">
+            <input id="startBike" value="bike1" />
+            <input id="startStation" value="Station A" />
+            <button id="btnStartTrip">Start</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>End trip</h2>
+          <div class="row">
+            <input id="tripId" value="trip1" />
+            <input id="endStation" value="Station A" />
+            <button id="btnEndTrip">End</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Cancel reservation</h2>
+          <div class="row">
+            <input id="resId" placeholder="reservation id" />
+            <button id="btnCancel">Cancel Reservation</button>
+          </div>
+        </div>
+
+        <div class="card" id="card-ops">
+          <h2>Move Bike (Operator)</h2>
+          <div class="row">
+            <input id="mvBikeId" placeholder="bike id" />
+            <input id="mvFrom" placeholder="from station" />
+            <input id="mvTo" placeholder="to station" />
+            <button id="btnMove">Move</button>
+          </div>
+        </div>
+
+        <div class="card" id="card-ops-admin">
+          <h2>Operator Admin (Station/Bike Status)</h2>
+          <div class="row" style="margin-bottom: 8px">
+            <input id="opStation" placeholder="station name" />
+            <button id="btnStationOOS">Set Station OOS</button>
+            <button id="btnStationActive">Set Station Active</button>
+          </div>
+          <div class="row">
+            <input id="opBike" placeholder="bike id" />
+            <button id="btnBikeMaint">Set Bike Maintenance</button>
+            <button id="btnBikeAvail">Set Bike Available</button>
+          </div>
+        </div>
+      </section>
+
+      <section style="margin-top: 16px">
+        <h3>Output</h3>
+        <div id="out"></div>
+      </section>
+    </main>
+
+    <!-- Load Firebase & auth -->
+    <script type="module" src="./firebase.js"></script>
+    <script type="module" src="./auth.js"></script>
+
+    <!-- Wire the dashboard actions -->
+    <script type="module">
+      import { auth } from "./firebase.js";
+      import { authFetch } from "./auth.js";
+      import {
+        loadStation,
+        reserve,
+        startTrip,
+        endTrip,
+        cancelReservation,
+        moveBike,
+        getProfile,
+        setStationOOS,
+        setStationActive,
+        setBikeMaintenance,
+        setBikeAvailable,
+      } from "./dashboard.js";
+
+      const $ = (sel) => document.querySelector(sel);
+      const out = (m) => ($("#out").textContent += m + "\n");
+
+      function showOpsCards(show) {
+        const ids = ["card-ops", "card-ops-admin"];
+        ids.forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = show ? "block" : "none";
+        });
+      } // operator-only cards are hidden/displayed depending on user
+
+      auth.onAuthStateChanged(async (u) => {
+        if (u) {
+          $("#userBadge").textContent = `UID: ${u.uid}`;
+          const me = await getProfile();
+          showOpsCards(me?.role === "OPERATOR"); // only show extra options if user is operator
+        } else {
+          $("#userBadge").textContent = "Not signed in";
+          showOpsCards(false);
+        }
+      });
+
+      $("#btnLoadStation").onclick = async () => {
+        try {
+          const name = $("#stationName").value.trim();
+          const data = await loadStation(name);
+          out(`GET /api/stations/${encodeURIComponent(name)} -> OK`);
+          $("#station").textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          out("Load failed: " + e.message);
+        }
+      };
+
+      $("#btnReserve").onclick = async () => {
+        try {
+          const bodyUserId = $("#userId").value.trim();
+          const uid = auth.currentUser?.uid ?? "";
+          await reserve(
+            bodyUserId || uid,
+            $("#bikeId").value.trim(),
+            $("#reserveStation").value.trim(),
+            Number($("#minutes").value)
+          );
+          out("POST /api/reservations -> OK");
+        } catch (e) {
+          out("Reserve failed: " + e.message);
+        }
+      };
+
+      $("#btnStartTrip").onclick = async (ev) => {
+        const btn = ev.currentTarget;
+        btn.disabled = true;
+
+        const clickTag = Math.random().toString(36).slice(2);
+        console.log("[UI] Start clicked tag=", clickTag, "payload=", {
+          bikeId: $("#startBike").value.trim(),
+          stationName: $("#startStation").value.trim(),
+        });
+
+        try {
+          const tripId = await startTrip({
+            bikeId: $("#startBike").value.trim(),
+            stationName: $("#startStation").value.trim(),
+          });
+          $("#tripId").value = tripId;
+          out(`POST /api/trips/start -> OK (tripId=${tripId}) [${clickTag}]`);
+        } catch (e) {
+          out("Start failed: " + e.message + ` [${clickTag}]`);
+        } finally {
+          btn.disabled = false;
+        }
+      };
+
+      $("#btnEndTrip").onclick = async () => {
+        try {
+          await endTrip({
+            tripId: $("#tripId").value.trim(),
+            stationName: $("#endStation").value.trim(),
+          });
+          out("POST /api/trips/end -> OK");
+        } catch (e) {
+          out("End failed: " + e.message);
+        }
+      };
+
+      $("#btnCancel").onclick = async () => {
+        try {
+          const id = $("#resId").value.trim();
+          if (!id) return out("Cancel: missing reservation id");
+          await cancelReservation(id);
+          out(`DELETE /api/reservations/${id} -> OK`);
+        } catch (e) {
+          out("Cancel failed: " + e.message);
+        }
+      };
+
+      $("#btnMove").onclick = async () => {
+        try {
+          await moveBike({
+            bikeId: $("#mvBikeId").value.trim(),
+            fromStation: $("#mvFrom").value.trim(),
+            toStation: $("#mvTo").value.trim(),
+          });
+          out("POST /api/ops/move-bike -> OK");
+        } catch (e) {
+          out("Move failed: " + e.message);
+        }
+      };
+
+      const elStationOOS = $("#btnStationOOS");
+      if (elStationOOS)
+        elStationOOS.onclick = async () => {
+          try {
+            await setStationOOS($("#opStation").value.trim());
+            out("POST /api/ops/stations/{name}/oos -> OK");
+          } catch (e) {
+            out("Set Station OOS failed: " + e.message);
+          }
+        };
+
+      const elStationActive = $("#btnStationActive");
+      if (elStationActive)
+        elStationActive.onclick = async () => {
+          try {
+            await setStationActive($("#opStation").value.trim());
+            out("POST /api/ops/stations/{name}/active -> OK");
+          } catch (e) {
+            out("Set Station Active failed: " + e.message);
+          }
+        };
+
+      const elBikeMaint = $("#btnBikeMaint");
+      if (elBikeMaint)
+        elBikeMaint.onclick = async () => {
+          try {
+            await setBikeMaintenance($("#opBike").value.trim());
+            out("POST /api/ops/bikes/{id}/maintenance -> OK");
+          } catch (e) {
+            out("Set Bike Maintenance failed: " + e.message);
+          }
+        };
+
+      const elBikeAvail = $("#btnBikeAvail");
+      if (elBikeAvail)
+        elBikeAvail.onclick = async () => {
+          try {
+            await setBikeAvailable($("#opBike").value.trim());
+            out("POST /api/ops/bikes/{id}/available -> OK");
+          } catch (e) {
+            out("Set Bike Available failed: " + e.message);
+          }
+        };
+    </script>
+  </body>
+</html>

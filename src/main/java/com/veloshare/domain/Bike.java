@@ -63,6 +63,30 @@ public class Bike {
         void setMaintenance();
     }
 
+    // Add these methods in Bike (public)
+    public boolean isAvailable() {
+        return state instanceof AvailableState;
+    }
+
+    public boolean isReserved() {
+        return state instanceof ReservedState;
+    }
+
+    public boolean isOnTrip() {
+        return state instanceof OnTripState;
+    }
+
+    public boolean isUnderMaintenance() {
+        return state instanceof MaintenanceState;
+    }
+
+    public void clearMaintenance() {
+        if (state instanceof MaintenanceState) {
+            // After maintenance a bike should become Available
+            this.state = new AvailableState(this);
+        }
+    }
+
     private class AvailableState implements BikeState {
 
         private Bike bike;
@@ -76,7 +100,7 @@ public class Bike {
         }
 
         public void startTrip() {
-            throw new IllegalStateException("Cannot start trip from available state");
+            bike.setState(new OnTripState(bike));
         }
 
         public void endTrip() {
@@ -155,7 +179,6 @@ public class Bike {
         public void setMaintenance() {
             throw new IllegalStateException("Cannot set maintenance during trip");
         }
-
     }
 
     private class MaintenanceState implements BikeState {

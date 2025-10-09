@@ -13,7 +13,7 @@ public class ReservationService {
         this.bms = bms;
     }
 
-    public Result<Void> get(ReserveBikeCmd cmd) {
+    public Result<Void> reserve(ReserveBikeCmd cmd) {
         try {
             Station s = bms.requireStation(cmd.StationName());
             bms.reserveBike(cmd.userId(), cmd.bikeId(), cmd.minutes(), s);

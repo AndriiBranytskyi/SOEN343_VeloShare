@@ -72,6 +72,10 @@ public class Trip {
         return bike;
     }
 
+    public void setBike(Bike bike) {
+        this.bike = bike;
+    }
+
     public void endTrip(Station endStation) {
         this.endStation = endStation;
         this.endTime = new Date();
