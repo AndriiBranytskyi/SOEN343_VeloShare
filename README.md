@@ -2,7 +2,7 @@
 Repository for the SOEN343 HK-X
 
 ## Description
-VeloShare is a webite that allows users to temporarily rent a bike or e-bike for person usage.
+VeloShare is a website that allows users to temporarily rent a bike or e-bike for personal usage.
 
 ## Instructions to run
 //TODO
