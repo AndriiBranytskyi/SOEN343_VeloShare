@@ -1,0 +1,51 @@
+<!-- all the form fields -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <form id="registerForm">
+    <h1>Create your account</h1>
+
+    <label>Full name
+      <input id="fullName" name="fullName" type="text" required />
+    </label>
+
+    <label>Email
+      <input id="email" name="email" type="email" required />
+      <small id="emailStatus" class="help"></small>
+    </label>
+
+    <label>Payment information
+      <input id="paymentInfo" name="paymentInfo" type="text" required />
+    </label>
+
+    <label>Address
+      <input id="address" name="address" type="text" required />
+    </label>
+
+    <label>Username
+      <input id="username" name="username" type="text" required />
+      <small id="usernameStatus" class="help"></small>
+    </label>
+
+    <label>Password
+      <input id="password" name="password" type="password" required />
+    </label>
+
+    <button type="submit">Register</button>
+    <p id="registerMsg"></p>
+  </form>
+
+  <button id="logoutBtn">Logout</button>
+
+  
+  <script type="module" src="./firebase.js"></script>
+  <script type="module" src="./auth.js"></script>
+</body>
+</html>
