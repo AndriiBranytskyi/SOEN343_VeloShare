@@ -104,6 +104,9 @@
       #card-ops-admin {
         display: none;
       }
+      .rider-card {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -113,6 +116,10 @@
         <div id="userBadge">Not signed in</div>
       </header>
 
+      <h2
+        id="dashboardType"
+        style="text-align: center; margin-bottom: 16px"
+      ></h2>
       <section class="cards">
         <div class="card">
           <h2>Station status</h2>
@@ -123,7 +130,7 @@
           <pre id="station" style="margin-top: 10px"></pre>
         </div>
 
-        <div class="card">
+        <div class="card rider-card">
           <h2>Reserve bike</h2>
           <div class="row">
             <input id="userId" placeholder="(optional) userId" />
@@ -134,7 +141,7 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card rider-card">
           <h2>Start trip</h2>
           <div class="row">
             <input id="startBike" value="bike1" />
@@ -143,7 +150,7 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card rider-card">
           <h2>End trip</h2>
           <div class="row">
             <input id="tripId" value="trip1" />
@@ -152,7 +159,7 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card rider-card">
           <h2>Cancel reservation</h2>
           <div class="row">
             <input id="resId" placeholder="reservation id" />
@@ -161,7 +168,7 @@
         </div>
 
         <div class="card" id="card-ops">
-          <h2>Move Bike (Operator)</h2>
+          <h2>Move Bike</h2>
           <div class="row">
             <input id="mvBikeId" placeholder="bike id" />
             <input id="mvFrom" placeholder="from station" />
@@ -171,7 +178,7 @@
         </div>
 
         <div class="card" id="card-ops-admin">
-          <h2>Operator Admin (Station/Bike Status)</h2>
+          <h2>Station & Bike Status</h2>
           <div class="row" style="margin-bottom: 8px">
             <input id="opStation" placeholder="station name" />
             <button id="btnStationOOS">Set Station OOS</button>
@@ -224,14 +231,32 @@
         });
       } // operator-only cards are hidden/displayed depending on user
 
+      function showRiderCards(show) {
+        const riderCards = document.querySelectorAll(".rider-card");
+        riderCards.forEach((el) => {
+          el.style.display = show ? "block" : "none";
+        });
+      }
+
       auth.onAuthStateChanged(async (u) => {
+        const dashTitle = document.getElementById("dashboardType");
+
         if (u) {
           $("#userBadge").textContent = `UID: ${u.uid}`;
           const me = await getProfile();
-          showOpsCards(me?.role === "OPERATOR"); // only show extra options if user is operator
+          const isOperator = me?.role === "OPERATOR";
+
+          showOpsCards(isOperator);
+          showRiderCards(!isOperator);
+
+          dashTitle.textContent = isOperator
+            ? "Operator Dashboard"
+            : "Rider Dashboard";
         } else {
           $("#userBadge").textContent = "Not signed in";
           showOpsCards(false);
+          showRiderCards(false);
+          dashTitle.textContent = "";
         }
       });
 
