@@ -7,7 +7,7 @@ VeloShare is a website that allows users to temporarily rent a bike or e-bike fo
 ## Instructions to run
 1. Prerequisits: Java 17+, Apache Maven
 2. Dowload project for GitHub
-3. Navigate to root folder and biuld the project: "mvn clean install"
+3. Navigate to root folder and build the project: "mvn clean install"
 4. Run the backend server with "mvn spring-boot:run"
 5. In browser go to http://localhost:8080/UI/HomePage.html
 
