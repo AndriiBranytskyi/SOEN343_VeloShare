@@ -1,5 +1,7 @@
 package com.veloshare.config;
 
+import java.io.FileInputStream;
+
 import org.springframework.context.annotation.Configuration;
 
 import com.google.auth.oauth2.GoogleCredentials;
@@ -12,9 +14,13 @@ public class FirebaseAdminConfig {
     public FirebaseAdminConfig() {
         if (FirebaseApp.getApps().isEmpty()) {
             try {
-                FirebaseOptions options = FirebaseOptions.builder()
-                        .setCredentials(GoogleCredentials.getApplicationDefault())
-                        .build();
+            	FileInputStream serviceAccount = new FileInputStream(
+                        "src/main/java/com/veloshare/config/firebaseAdminConfigCredentials.json"
+                    );
+
+                    FirebaseOptions options = FirebaseOptions.builder()
+                            .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                            .build();
                 FirebaseApp.initializeApp(options);
                 System.out.println("Firebase Admin initialized");
             } catch (Exception e) {
