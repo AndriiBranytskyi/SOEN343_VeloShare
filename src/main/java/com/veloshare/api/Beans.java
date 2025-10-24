@@ -51,10 +51,10 @@ public class Beans {
         return new RolesRepo();
     }
 
-    //preload yourself as operator or rider for testing
+    //preload yourself as operator or rider for testing -> this can be removed i just added it when testing
     @Bean
     CommandLineRunner preloadOperator(RolesRepo roles) {
-        return args -> roles.setRole("fRQDk2UrwKhXfkh52WUK2O8JZUk2", Role.RIDER);
+        return args -> roles.setRole("fRQDk2UrwKhXfkh52WUK2O8JZUk2", Role.OPERATOR);
     }
 
     @Bean
