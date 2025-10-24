@@ -300,7 +300,6 @@ public class bmsService {
 
         Reservation reservation = new Reservation("res" + bikeId + userId, bikeId, userId, holdMinutes);
         bike.reserve(reservation.getExpiresAt()); 
-         
         System.out.println(bike.getState()); //debug
 
         activeReservations.put(reservation.getReservationId(), reservation);
