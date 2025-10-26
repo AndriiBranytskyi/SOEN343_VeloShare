@@ -142,9 +142,13 @@ if (loginForm) {
   const POST_LOGIN_REDIRECT = "index.html";
 
   //   auto-redirect if already logged in
-  onAuthStateChanged(auth, (user) => {
-    if (user) window.location.replace(POST_LOGIN_REDIRECT);
-  });
+    onAuthStateChanged(auth, (user) => {
+      const page = location.pathname.split('/').pop()?.toLowerCase();
+      const allowList = ['loginpage.html','register.html','forgot.html']; // add your auth pages
+      if (user && !allowList.includes(page)) {
+        location.replace('index.html');
+      }
+    });
 
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();

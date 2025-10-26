@@ -3,16 +3,399 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Home</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>VeloShare — Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      /* Light palette inspired by image 2 */
+      --bg: #f6f7fb;
+      --surface: #ffffff;
+      --panel: #f1f5f9;        /* very light slate */
+      --ink: #0f172a;          /* slate-900 */
+      --muted: #64748b;        /* slate-500/600 */
+      --border: #e5e7eb;
+      --primary: #111827;      /* dark pill button like img2 */
+      --primary-ink: #ffffff;
+      --accent: #3B82F6;       /* small accents (links/focus) */
+      --shadow-lg: 0 20px 40px rgba(2, 8, 23, .08), 0 2px 6px rgba(2, 8, 23, .05);
+      --shadow-md: 0 10px 24px rgba(2, 8, 23, .06), 0 1px 3px rgba(2, 8, 23, .05);
+      --radius: 14px;
+    }
+
+    html,body{
+      height:100%;
+      margin:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    /* MAP */
+      #map {
+      flex: 1 1 auto;
+      width: 100%; height: 100vh;
+      min-width: 0; min-height: 0;
+      margin: 0; padding: 0;
+      z-index: 1;
+      opacity: 1;
+      background: #f2f6f7;
+    }
+
+    /* TOP BAR */
+    /* make top bar border darker */
+.appbar {
+  position: fixed;
+  inset: 0 auto auto 0;
+  right: 0;
+  height: 64px;
+  z-index: 5;
+  background: var(--surface);
+  border-bottom: 1px solid #00000022; /* <-- thin black outline */
+  display: flex;
+  align-items: center;
+}
+
+
+
+    .container{ width:min(1200px,94vw); margin:0 auto; display:flex; align-items:center; justify-content:space-between; }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:-.01em; text-decoration:none; color:inherit; }
+    .logo{  width:22px; height:24px; border-radius:5px; background:var(--primary); }
+    .brand-name{ color:black; text-decoration:none; font-size:24px; }
+
+    .nav{ display:flex; align-items:center; gap:12px; }
+    .nav-link{
+      color:var(--muted); text-decoration:none; font-weight:600; padding:10px 8px;
+    }
+    .btn{ display:inline-flex; align-items:center; justify-content:center; height:38px; padding:0 16px; border-radius:999px; font-weight:700; transition:transform .06s ease, filter .15s ease; }
+    .btn:hover{ transform:translateY(-1px); }
+    .btn.primary{ background:var(--primary); color:var(--primary-ink); border:1px solid var(--primary); text-decoration: none}
+    .btn.ghost{ background:var(--surface); color:var(--primary); border:1px solid var(--primary); text-decoration: none;}
+
+    /* LEFT CARD */
+    .sidecard {
+      position: fixed;
+      top: 96px;
+      left: 24px;
+      width: 360px;
+      bottom: auto;
+      z-index: 4;
+      background: var(--surface);
+      border: 1px solid #00000022; /* <-- subtle black outline */
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    .sidecard-header{
+      background:var(--panel); padding:16px 18px; border-bottom:1px solid var(--border);
+    }
+    .sidecard-header h1{ margin:0; font-size:20px; font-weight:800; letter-spacing:-.01em; }
+    .sidecard-header p{ margin:6px 0 0; color:var(--muted); font-size:13.5px; }
+
+    .sidecard-body{ padding:14px 16px 16px; display:flex; flex-direction:column; gap:12px; }
+
+    .search{
+      display:flex; gap:8px; align-items:center;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:999px; padding:6px;
+      box-shadow:var(--shadow-md);
+    }
+    .search-input{
+      flex:1; border:0; background:transparent; outline:0; font-size:15px; padding:10px 12px;
+    }
+    .search-btn{
+      border:1px solid var(--primary); background:var(--primary); color:var(--primary-ink);
+      border-radius:999px; padding:10px 16px; font-weight:700; cursor:pointer;
+    }
+    .search-btn:hover{ filter:brightness(.95); }
+
+/* ensure plain vertical list */
+    .list { display: flex; flex-direction: column; gap: 10px; }
+    .item{ padding:12px 14px; border:1px solid var(--border); border-radius:12px; background:var(--surface); display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 0 rgba(2,8,23,.03); }
+    .item .meta{ color:var(--muted); font-size:12.5px; }
+
+    .footer{
+      position:fixed; left:50%; transform:translateX(-50%); bottom:14px; z-index:3;
+      background:var(--surface); border:1px solid var(--border); border-radius:999px; height:36px;
+      display:flex; align-items:center; gap:12px; padding:0 12px; box-shadow:var(--shadow-md);
+      color:var(--muted); font-weight:600; font-size:13px;
+    }
+    .footer a{ color:var(--accent); text-decoration:none; }
+
+    @media (max-width:980px){
+      .sidecard{ left:50%; transform:translateX(-50%); width:min(92vw,520px); top:88px; }
+    }
+    @media (max-width:760px){
+      .nav .nav-link, .nav .btn.ghost{ display:none; }
+    }
+
+    /* a11y */
+    :focus-visible{ outline:0; box-shadow:0 0 0 3px rgba(37,99,235,.25); border-radius:12px; }
+  </style>
 </head>
 <body>
-  <div class="homepage-header">
-    <h1>Welcome to VeloShare!</h1>
-    <nav>
-      <a href="Register.html" class="home-link">Register</a>
-      <a href="LoginPage.html" class="home-link">Login</a>
-    </nav>
+  <!-- MAP -->
+  <div id="map"></div>
+
+  <!-- TOP BAR -->
+  <header class="appbar">
+    <div class="container">
+      <a class="brand" href="HomePage.html" aria-label="VeloShare home">
+        <div class="logo" aria-hidden="true"></div>
+        <span class="brand-name">VeloShare</span>
+      </a>
+      <nav class="nav">
+        <a class="btn ghost" href="LoginPage.html">Log in</a>
+        <a class="btn primary" href="Register.html">Sign up</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- LEFT CARD -->
+  <aside class="sidecard">
+    <div class="sidecard-header">
+      <h1>Find a bike</h1>
+      <p>Search stations or drop a pin anywhere on the map.</p>
+    </div>
+    <div class="sidecard-body">
+      <form class="search" id="searchForm" role="search">
+        <input class="search-input" type="text" placeholder="Search stations or address" aria-label="Search">
+        <button class="search-btn" type="submit">Search</button>
+      </form>
+      <div class="list" id="stationList">
+      </div>
+    </div>
+  </aside>
+
+  <footer class="footer">© VeloShare</footer>
+
+<script>
+  const LIGHT_STYLE = [
+    { elementType: "geometry", stylers: [{ color: "#f8fafc" }] },
+    { elementType: "labels.text.fill", stylers: [{ color: "#475569" }] },
+    { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
+    { featureType: "water", elementType: "geometry", stylers: [{ color: "#c9e6ff" }] },
+    { featureType: "poi", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+    { featureType: "transit", stylers: [{ visibility: "off" }] },
+    { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+    { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#334155" }] },
+    { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#fef3c7" }] },
+    { featureType: "administrative", elementType: "geometry", stylers: [{ visibility: "off" }] }
+  ];
+
+  // Properly encode SVG for data-URL (prevents it from being dropped)
+function markerSvgEncoded(fill = "#3B82F6") {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42" fill="none">
+      <path d="M16 41s12-11.2 12-23A12 12 0 0 0 4 18c0 11.8 12 23 12 23z" fill="${fill}"/>
+      <circle cx="16" cy="18" r="5.5" fill="white"/>
+    </svg>`;
+  return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg.trim());
+}
+
+function markerIcon(fill) {
+  return { url: markerSvgEncoded(fill), scaledSize: new google.maps.Size(32, 42) };
+}
+
+  let map, geocoder, stations = [], markers = [], infos = [];
+
+  async function loadStations() {
+    // 1) try /config.json
+    try {
+      const res = await fetch('/config.json', { cache: 'no-store' });
+      if (res.ok) {
+        const cfg = await res.json();
+        if (Array.isArray(cfg.stations)) return cfg.stations;
+      }
+    } catch (e) {
+      console.warn('fetch /config.json failed', e);
+    }
+    // 2) try inline <script id="config-data">
+    const tag = document.getElementById('config-data');
+    if (tag) {
+      try {
+        const cfg = JSON.parse(tag.textContent);
+        if (Array.isArray(cfg.stations)) return cfg.stations;
+      } catch {}
+    }
+    // 3) last resort demo
+    return [
+      { name: "Old Montreal",   latitude: 45.5017, longitude: -73.5673, capacity: 8, bikes: [{type:'standard'},{type:'e-bike'}] },
+      { name: "Jeanne-Mance",   latitude: 45.5124, longitude: -73.5815, capacity: 6, bikes: [{type:'standard'}] },
+      { name: "Downtown Hub",   latitude: 45.4950, longitude: -73.5780, capacity: 12, bikes: [{type:'standard'},{type:'standard'},{type:'e-bike'}] }
+    ];
+  }
+
+  function clearMarkers() {
+    markers.forEach(m => m.setMap(null));
+    markers = []; infos = [];
+  }
+function addMarkers() {
+  clearMarkers();
+  const bounds = new google.maps.LatLngBounds();
+  let validCount = 0;
+
+  if (!Array.isArray(stations) || stations.length === 0) {
+    console.warn("No stations loaded — adding a sanity marker so you can see pins render.");
+    const sanityPos = { lat: 45.51, lng: -73.58 };
+    const sanity = new google.maps.Marker({
+      position: sanityPos,
+      map,
+      title: "Sanity marker",
+      icon: markerIcon("#3B82F6")
+    });
+    markers.push(sanity);
+    bounds.extend(sanityPos);
+    map.setZoom(11);
+    return;
+  }
+
+  stations.forEach((s, idx) => {
+    if (s.latitude == null || s.longitude == null) {
+      console.warn("Station missing coords, skipping:", s);
+      return;
+    }
+    validCount++;
+    const pos = { lat: Number(s.latitude), lng: Number(s.longitude) };
+    bounds.extend(pos);
+
+    const marker = new google.maps.Marker({
+      position: pos,
+      map,
+      title: s.name,
+      icon: markerIcon("#3B82F6")
+    });
+
+    const bikeCount = s.bikes?.length || 0;
+    const eBike = s.bikes?.filter(b => b.type === "e-bike").length || 0;
+    const std = bikeCount - eBike;
+
+    const info = new google.maps.InfoWindow({
+      content: `
+    <div style="
+      font:500 14px Inter,system-ui;
+      max-width:160px;
+      line-height:1.2;
+      padding:1px 0;
+    ">
+      <div style="font-weight:700;margin-bottom:6px;">${s.name}</div>
+      <div style="color:#64748b;font-size:13px;margin-bottom:8px;">
+        ${bikeCount} bikes (${std} standard • ${eBike} e-bikes)
+      </div>
+      <a href="Register.html"
+         style="
+           display:inline-block;
+           padding:6px 12px;
+           border-radius:999px;
+           background:#111827;
+           color:#fff;
+           text-decoration:none;
+           font-weight:600;
+           font-size:13px;
+         ">
+        Book
+      </a>
+    </div>`
+    });
+
+    marker.addListener("click", () => {
+      infos.forEach(i => i.close());
+      info.open({ anchor: marker, map });
+      highlightMarker(idx);
+    });
+
+    markers.push(marker);
+    infos.push(info);
+  });
+
+  // Only fit bounds if there are 2+ valid stations
+  if (validCount > 1 && !bounds.isEmpty()) {
+    map.fitBounds(bounds);
+  } else {
+    map.setZoom(11);
+  }
+}
+
+
+  function renderList() {
+    const list = document.getElementById('stationList');
+    list.innerHTML = '';
+    stations.forEach((s, idx) => {
+      const bikeCount = s.bikes?.length || 0;
+      const eBike = s.bikes?.filter(b => b.type === 'e-bike').length || 0;
+      const std = bikeCount - eBike;
+
+const el = document.createElement('div');
+el.className = 'item';
+el.innerHTML = `
+  <div>
+    <strong>${s.name}</strong>
+    <div class="meta">${bikeCount} bikes (${std} standard • ${eBike} e-bikes)</div>
   </div>
+  <a class="btn primary" href="Register.html" data-index="${idx}">Book</a>
+`;
+
+// keep row-click to focus the marker
+el.addEventListener('click', (ev) => {
+  // let the Book link navigate without focusing marker
+  const target = ev.target;
+  if (target instanceof Element && target.closest('a')) return;
+  focusStation(idx);
+});
+
+
+      list.appendChild(el);
+    });
+  }
+
+  function focusStation(idx) {
+    const s = stations[idx];
+    const pos = { lat: Number(s.latitude), lng: Number(s.longitude) };
+    map.panTo(pos);
+    map.setZoom(14);
+    infos.forEach(i => i.close());
+    infos[idx]?.open({ anchor: markers[idx], map });
+    highlightMarker(idx);
+  }
+
+  function highlightMarker(activeIdx) {
+    markers.forEach((m, i) => {
+      const color = i === activeIdx ? '#111827' : '#3B82F6';
+      m.setIcon({ url: markerSvg(color), scaledSize: new google.maps.Size(32, 42) });
+    });
+  }
+
+  window.initMap = async function () {
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: { lat: 45.51, lng: -73.58 },
+      zoom: 11, // less zoomed in
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+      styles: LIGHT_STYLE
+    });
+    geocoder = new google.maps.Geocoder();
+
+    stations = await loadStations();   // <-- load data
+    addMarkers();                      // <-- draw pins from the same array
+    renderList();                      // <-- stack list, no [object Object]
+
+    document.getElementById('searchForm')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const q = e.currentTarget.querySelector('.search-input').value.trim();
+      if (!q) return;
+      geocoder.geocode({ address: q }, (results, status) => {
+        if (status !== 'OK' || !results?.length) return;
+        const loc = results[0].geometry.location;
+        map.panTo(loc);
+        map.setZoom(13);
+      });
+    });
+  };
+</script>
+
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDBKGrjRztQ1CRAdSWw9nOFnttSCrI9Q4A&callback=initMap&v=weekly&loading=async" defer></script>
 </body>
 </html>

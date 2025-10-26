@@ -4,98 +4,171 @@
     <meta charset="utf-8" />
     <title>VeloShare Dashboard</title>
     <link rel="stylesheet" href="styles.css" />
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet">
     <style>
       :root {
-        --bg: #0f172a;
-        --card: #1e293b;
-        --text: #f1f5f9;
+        --bg: #f5f7fa;
+        --card: rgba(255,255,255,0.9);
+        --text: #23272b;
         --muted: #94a3b8;
-        --accent: #3b82f6;
-        --border: #334155;
+        --accent: #00C4B4;
+        --border: #00C4B4;
+        --coral: #FF6F61;
       }
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
       body {
         margin: 0;
-        padding: 24px;
-        background: var(--bg);
+        padding: 0;
+        min-height: 100vh;
+        background: linear-gradient(135deg, rgba(245,247,250,0.8), rgba(229,236,246,0.8)), var(--bg);
         color: var(--text);
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial,
-          sans-serif;
+        font-family: 'Poppins', Arial, sans-serif;
         display: flex;
         justify-content: center;
+        align-items: center;
       }
       .wrap {
         width: 100%;
         max-width: 1024px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
       .topbar {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
         margin-bottom: 16px;
+        position: relative;
       }
       .topbar h1 {
-        font-size: 22px;
+        font-size: 32px;
         margin: 0;
-        font-weight: 600;
+        font-weight: 700;
+        font-family: 'Poppins', Arial, sans-serif;
+        color: var(--accent);
+        letter-spacing: 0.3px;
       }
       #userBadge {
-        font-size: 14px;
-        color: var(--muted);
+        font-size: 15px;
+        color: #00C4B4;
+        font-weight: 700;
+        position: fixed;
+        top: 18px;
+        right: 36px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        box-shadow: none;
+        letter-spacing: 0.5px;
+      }
+      @media (max-width: 600px) {
+        #userBadge {
+          right: 12px;
+          top: 12px;
+          font-size: 13px;
+        }
       }
       .cards {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        grid-template-columns: 1fr;
         gap: 16px;
+        width: 100%;
+        justify-items: center;
+      }
+      @media (min-width: 700px) {
+        .cards { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
       }
       .card {
         border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 16px;
+        border-radius: 18px;
+        padding: 24px 20px 20px 20px;
         background: var(--card);
+        box-shadow: 0 8px 32px 0 rgba(0,196,180,0.10), 0 1.5px 8px #00C4B422;
+        backdrop-filter: blur(10px);
+        max-width: 320px;
+        margin: 0 auto 18px auto;
+        position: relative;
+        animation: cardIn 0.5s cubic-bezier(.4,1.3,.6,1);
+        transform: scale(0.95);
+        animation-fill-mode: forwards;
       }
-      .card h2 {
-        margin: 0 0 12px 0;
-        font-size: 18px;
-        font-weight: 600;
+      @keyframes cardIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      .card h2, .register-title {
+        margin: 0 0 18px 0;
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        color: var(--accent);
+        font-family: 'Poppins', Arial, sans-serif;
+        text-align: center;
       }
       .row {
         display: flex;
-        gap: 8px;
+        gap: 12px;
         flex-wrap: wrap;
+        margin-bottom: 10px;
       }
       .row input,
       .row select {
         flex: 1 1 160px;
-        min-width: 150px;
+        min-width: 120px;
         max-width: 100%;
-        padding: 8px;
-        border-radius: 8px;
-        border: 1px solid var(--border);
-        background: var(--card);
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(0,196,180,0.2);
+        background: #F9FAFB;
         color: var(--text);
+        font-family: 'Poppins', Arial, sans-serif;
+        font-size: 15px;
+        font-weight: 400;
+        margin-bottom: 0;
+        box-shadow: none;
+        outline: none;
+        transition: border-bottom 0.22s, box-shadow 0.22s, background 0.22s, color 0.22s;
+        border-bottom: 2px solid transparent;
+        animation: inputSlideIn 0.5s cubic-bezier(.4,1.3,.6,1);
+      }
+      .row input:focus, .row select:focus {
+        border-bottom: 2px solid var(--accent);
+        background: #fff;
+      }
+      @keyframes inputSlideIn {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
       }
       button {
-        padding: 10px 14px;
-        border-radius: 8px;
-        border: 1px solid var(--border);
+        padding: 12px 24px;
+        border-radius: 20px;
+        border: none;
         background: var(--accent);
         color: #fff;
         cursor: pointer;
-        flex: 0 0 auto;
+        font-family: 'Poppins', Arial, sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 8px #00C4B422;
+        transition: background 0.18s, transform 0.18s;
       }
       button:hover {
-        filter: brightness(1.1);
+        background: #009688;
+        transform: translateY(-2px);
       }
       #out {
         white-space: pre-wrap;
-        background: var(--bg);
-        color: var(--muted);
+        background: rgba(255,255,255,0.7);
+        color: #4A5568;
         padding: 12px;
-        border-radius: 8px;
-        border: 1px solid var(--border);
+        border-radius: 10px;
+        border: 1px solid var(--accent);
+        font-family: 'Poppins', Arial, sans-serif;
+        font-size: 14px;
       }
       /* Hide operator card by default; JS will enable if role=OPERATOR */
       #card-ops {
@@ -170,9 +243,9 @@
         <div class="card" id="card-ops">
           <h2>Move Bike</h2>
           <div class="row">
-            <input id="mvBikeId" placeholder="bike id" />
-            <input id="mvFrom" placeholder="from station" />
-            <input id="mvTo" placeholder="to station" />
+            <input id="mvBikeId" placeholder="Bike ID" />
+            <input id="mvFrom" placeholder="From station" />
+            <input id="mvTo" placeholder="To station" />
             <button id="btnMove">Move</button>
           </div>
         </div>
@@ -180,19 +253,19 @@
         <div class="card" id="card-ops-admin">
           <h2>Station & Bike Status</h2>
           <div class="row" style="margin-bottom: 8px">
-            <input id="opStation" placeholder="station name" />
+            <input id="opStation" placeholder="Station Name" />
             <button id="btnStationOOS">Set Station OOS</button>
             <button id="btnStationActive">Set Station Active</button>
           </div>
           <div class="row">
-            <input id="opBike" placeholder="bike id" />
+            <input id="opBike" placeholder="Bike ID" />
             <button id="btnBikeMaint">Set Bike Maintenance</button>
             <button id="btnBikeAvail">Set Bike Available</button>
           </div>
         </div>
       </section>
 
-      <section style="margin-top: 16px">
+      <section style="margin-top: 14px">
         <h3>Output</h3>
         <div id="out"></div>
       </section>
