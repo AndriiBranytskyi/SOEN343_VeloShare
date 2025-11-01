@@ -64,6 +64,7 @@
       justify-content:center;
       padding:clamp(16px,4vw,48px);
     }
+
     .auth-card{
       width:min(880px,92vw);
       min-height:480px;
@@ -132,6 +133,14 @@ background: linear-gradient(165deg, #dff2ff 0%, #a5d3ff 35%, #6ba8f7 100%);
     .row .field{ flex:1 1 0; }
     .field{ display:flex; flex-direction:column; gap:2px; width:100%; }
     .label{ font-size:13.5px; color:var(--muted); font-weight:500; margin-bottom:2px; letter-spacing:.01em; }
+    
+    .hint {
+      margin-top: 2px;
+      font-size: 13.5px;
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: .01em;
+    }
 
     .input{
       font:400 16px/1 'Inter', Arial, sans-serif;
@@ -197,36 +206,46 @@ background: linear-gradient(150deg, #2a2c30 0%, #111214 100%);
           <p class="muted">Welcome! A few details and you’re in.</p>
         </header>
 
-        <div class="row">
-          <div class="field">
-            <label class="label" for="firstName">First name</label>
-            <input class="input" id="firstName" name="firstName" type="text" required placeholder="Jane" autocomplete="given-name" />
-          </div>
-          <div class="field">
-            <label class="label" for="lastName">Last name</label>
-            <input class="input" id="lastName" name="lastName" type="text" required placeholder="Doe" autocomplete="family-name" />
-          </div>
+        <div class="field">
+          <label class="label" for="fullName">Full name</label>
+          <input class="input" id="fullName" name="fullName" type="text" required placeholder="Jane Doe" autocomplete="name" />
         </div>
+
+        <div class="field">
+        <label class="label" for="role">I am a</label>
+        <select class="input" id="role" name="role" required>
+          <option value="rider">Rider</option>
+          <option value="operator">Operator</option>
+        </select>
+        </div>
+
 
         <div class="row">
           <div class="field">
             <label class="label" for="username">Username</label>
             <input class="input" id="username" name="username" type="text" required placeholder="Choose a username" autocomplete="username" />
+          <div id="usernameStatus" class="hint"></div>
           </div>
           <div class="field">
             <label class="label" for="password">Password</label>
             <input class="input" id="password" name="password" type="password" required placeholder="Create a password" autocomplete="new-password" />
+            <div id="passwordStatus" class="hint"></div>
           </div>
         </div>
 
         <div class="field">
           <label class="label" for="email">Email</label>
           <input class="input" id="email" name="email" type="email" required placeholder="you@email.com" autocomplete="email" />
+          <div id="emailStatus" class="hint"></div>
         </div>
 
         <div class="field">
-          <label class="label" for="payment">Payment information</label>
-          <input class="input" id="payment" name="payment" type="text" required placeholder="Card or payment details" autocomplete="cc-number" />
+          <label class="label" for="address">Address</label>
+          <input class="input" id="address" name="address" type="text" required placeholder="Your address" autocomplete="street-address" />
+        </div>
+        <div class="field">
+          <label class="label" for="paymentInfo">Payment information</label>
+          <input class="input" id="paymentInfo" name="paymentInfo" type="text" required placeholder="Card or payment details" autocomplete="cc-number" />
         </div>
 
         <div class="actions">
@@ -262,20 +281,16 @@ background: linear-gradient(150deg, #2a2c30 0%, #111214 100%);
         ]
       });
     }
-    // Fake submit feedback
-    document.addEventListener('DOMContentLoaded', () => {
-      const form = document.getElementById('registerForm');
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const btn = form.querySelector('button[type="submit"]');
-        const msg = document.getElementById('registerMsg');
-        const prev = btn.textContent;
-        btn.disabled = true; btn.textContent = 'Creating your account…'; msg.textContent = '';
-        setTimeout(() => { btn.disabled = false; btn.textContent = prev; msg.textContent = 'Account created!'; }, 1200);
-      });
-    });
+
+  const savedRole = localStorage.getItem('desiredRole');
+  const roleSel = document.getElementById('role');
+  if (savedRole && roleSel) {
+    roleSel.value = savedRole;
+  }
+
   </script>
-  <!-- Load Maps ONCE (put your real key) -->
+  <script type="module" src="./firebase.js"></script>
+  <script type="module" src="./auth.js"></script>
   <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDBKGrjRztQ1CRAdSWw9nOFnttSCrI9Q4A&callback=initMap"></script>
 </body>
 </html>

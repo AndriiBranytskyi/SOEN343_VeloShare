@@ -20,6 +20,24 @@ const exists = async (path) => (await get(ref(db, path))).exists();
 const emailExists = (email) => exists(`emails/${emailKey(email)}`);
 const usernameExists = (u) => exists(`usernames/${u.trim().toLowerCase()}`);
 
+// Check if user is an operator
+const checkOperatorRole = async (uid) => {
+    const userRoleRef = ref(db, `users/${uid}/role`);
+    const snapshot = await get(userRoleRef);
+    return snapshot.exists() && snapshot.val() === 'operator';
+};
+
+// Handle login navigation based on role
+const handleLoginNavigation = async (user) => {
+    if (!user) return;
+    const isOperator = await checkOperatorRole(user.uid);
+    if (isOperator) {
+        window.location.href = 'OperatorDashboard.html';
+    } else {
+        window.location.href = 'HomePage.html';
+    }
+};
+
 const registerForm = document.getElementById("registerForm");
 if (registerForm) {
   const registerMsg = document.getElementById("registerMsg");
@@ -33,7 +51,7 @@ if (registerForm) {
     if (!isValidEmail(email)) {
       //if its not a valid email
       emailStatus.textContent = "Invalid email format";
-      emailStatus.className = "error";
+      emailStatus.className = "hint error";
       return;
     }
     emailStatus.textContent = "Checking…"; //else check if it has been used or not
@@ -41,14 +59,14 @@ if (registerForm) {
     emailStatus.textContent = taken
       ? "Email is already taken"
       : "Email is available";
-    emailStatus.className = taken ? "error" : "ok";
+    emailStatus.className = taken ? "hint error" : "hint ok";
   });
 
   usernameInput?.addEventListener("blur", async () => {
     const u = usernameInput.value.trim().toLowerCase();
     if (u.length < 3) {
       usernameStatus.textContent = "Username too short";
-      usernameStatus.className = "error";
+      usernameStatus.className = "hint error";
       return;
     }
     usernameStatus.textContent = "Checking…";
@@ -56,13 +74,14 @@ if (registerForm) {
     usernameStatus.textContent = taken
       ? "Username is already taken"
       : "Username is available";
-    usernameStatus.className = taken ? "error" : "ok";
+    usernameStatus.className = taken ? "hint error" : "hint ok";
   });
 
   registerForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const fullName = registerForm.fullName.value.trim();
+    const role = registerForm.role ? registerForm.role.value : "rider"; 
     const email = registerForm.email.value.trim();
     const paymentInfo = registerForm.paymentInfo.value.trim();
     const address = registerForm.address.value.trim();
@@ -76,7 +95,7 @@ if (registerForm) {
       !isValidEmail(email) ||
       username.length < 3
     ) {
-      registerMsg.className = "error";
+      registerMsg.className = "hint error";
       registerMsg.textContent = "Please fill all fields correctly.";
       return;
     }
@@ -86,7 +105,7 @@ if (registerForm) {
       usernameExists(username),
     ]);
     if (emailTaken || userTaken) {
-      registerMsg.className = "error";
+      registerMsg.className = "hint error";
       registerMsg.textContent = "Email or username already taken.";
       return;
     }
@@ -102,6 +121,7 @@ if (registerForm) {
         username,
         paymentInfo,
         address,
+        role,
         createdAt: Date.now(),
       };
       await update(ref(db), {
@@ -142,13 +162,13 @@ if (loginForm) {
   const POST_LOGIN_REDIRECT = "index.html";
 
   //   auto-redirect if already logged in
-    onAuthStateChanged(auth, (user) => {
-      const page = location.pathname.split('/').pop()?.toLowerCase();
-      const allowList = ['loginpage.html','register.html','forgot.html']; // add your auth pages
-      if (user && !allowList.includes(page)) {
-        location.replace('index.html');
-      }
-    });
+onAuthStateChanged(auth, (user) => {
+  const page = location.pathname.split('/').pop()?.toLowerCase();
+  const allowList = ['loginpage.html','register.html','forgot.html']; // add your auth pages
+  if (user && !allowList.includes(page)) {
+    location.replace('index.html');
+  }
+});
 
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -156,32 +176,33 @@ if (loginForm) {
     const pass = passEl.value.trim();
 
     if (!isValidEmail(email) || !pass) {
-      loginMsg.className = "error";
+      loginMsg.className = "hint error";
       loginMsg.textContent = "Enter a valid email and password.";
       return;
     }
 
     try {
       await signInWithEmailAndPassword(auth, email, pass);
-      loginMsg.className = "ok";
+      loginMsg.className = "hint ok";
       loginMsg.textContent = "Logged in! Redirecting…";
       setTimeout(() => {
         window.location.href = POST_LOGIN_REDIRECT;
       }, 800);
     } catch (err) {
       console.error(err);
-      const msg =
-        err.code === "auth/invalid-email"
-          ? "Invalid email address."
-          : err.code === "auth/user-disabled"
-          ? "This account is disabled."
-          : err.code === "auth/user-not-found"
-          ? "No account with that email."
-          : err.code === "auth/wrong-password"
-          ? "Incorrect password."
-          : err.message || "Login failed.";
-      loginMsg.className = "error";
-      loginMsg.textContent = `${msg}`;
+       const msg =
+  err.code === "auth/invalid-email"
+        ? "Invalid email address."
+        : err.code === "auth/user-disabled"
+        ? "This account is disabled."
+        : err.code === "auth/user-not-found"
+        ? "No account with that email."
+        : err.code === "auth/wrong-password" || err.code === "auth/invalid-credential"
+        ? "Incorrect email or password."
+        : err.message || "Login failed.";
+    loginMsg.className = "hint error";
+    loginMsg.textContent = msg;
+
     }
   });
 
