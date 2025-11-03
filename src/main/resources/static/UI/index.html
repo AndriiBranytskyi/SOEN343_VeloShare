@@ -1,468 +1,812 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>VeloShare Dashboard</title>
-    <link rel="stylesheet" href="styles.css" />
-    <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet">
-    <style>
-      :root {
-        --bg: #f5f7fa;
-        --card: rgba(255,255,255,0.9);
-        --text: #23272b;
-        --muted: #94a3b8;
-        --accent: #00C4B4;
-        --border: #00C4B4;
-        --coral: #FF6F61;
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        padding: 0;
-        min-height: 100vh;
-        background: linear-gradient(135deg, rgba(245,247,250,0.8), rgba(229,236,246,0.8)), var(--bg);
-        color: var(--text);
-        font-family: 'Poppins', Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      .wrap {
-        width: 100%;
-        max-width: 1024px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      .topbar {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 16px;
-        position: relative;
-      }
-      .topbar h1 {
-        font-size: 32px;
-        margin: 0;
-        font-weight: 700;
-        font-family: 'Poppins', Arial, sans-serif;
-        color: var(--accent);
-        letter-spacing: 0.3px;
-      }
-      #userBadge {
-        font-size: 15px;
-        color: #00C4B4;
-        font-weight: 700;
-        position: fixed;
-        top: 18px;
-        right: 36px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        box-shadow: none;
-        letter-spacing: 0.5px;
-      }
-      @media (max-width: 600px) {
-        #userBadge {
-          right: 12px;
-          top: 12px;
-          font-size: 13px;
-        }
-      }
-      .cards {
-        display: grid;
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>VeloShare — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      /* Palette */
+      --bg: #f6f8fb;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --blue: #0ea5e9;
+      --border: rgba(15, 23, 42, 0.12);
+      --panel: #fff;
+
+      /* Layout + effects */
+      --radius: 10px;
+      --gap: 12px;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+
+      /* Status tints */
+      --t-green: rgba(34, 197, 94, 0.12);
+      --t-amber: rgba(249, 115, 22, 0.12);
+      --t-red: rgba(239, 68, 68, 0.12);
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial,
+        sans-serif;
+    }
+
+    /* TOP NAV BAR */
+    .navbar {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px;
+    }
+
+    .brand {
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Buttons for top nav */
+    .btn {
+      font-family: "Inter", sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 999px;
+      padding: 6px 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, opacity 0.15s;
+    }
+
+    /* Color variables for brand theme */
+    :root {
+      --primary: #0ea5e9;
+      --primary-ink: #fff;
+      --surface: #fff;
+    }
+
+    /* Button types */
+    .btn.primary {
+      background: var(--primary);
+      color: var(--primary-ink);
+      border: 1px solid var(--primary);
+      text-decoration: none;
+    }
+    .btn.primary:hover {
+      opacity: 0.9;
+    }
+
+    .btn.ghost {
+      background: black;
+      color: white;
+      text-decoration: none;
+    }
+    .btn.ghost:hover {
+      background: rgba(255, 255, 255, 0.799);
+      color: black;
+      border: 1px solid black;
+    }
+
+    /* LAYOUT */
+    .page {
+      height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(340px, 500px) 1fr;
+      gap: var(--gap);
+      padding: var(--gap);
+    }
+    @media (max-width: 960px) {
+      .page {
         grid-template-columns: 1fr;
-        gap: 16px;
-        width: 100%;
-        justify-items: center;
+        grid-template-rows: auto 360px;
       }
-      @media (min-width: 700px) {
-        .cards { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
-      }
-      .card {
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 24px 20px 20px 20px;
-        background: var(--card);
-        box-shadow: 0 8px 32px 0 rgba(0,196,180,0.10), 0 1.5px 8px #00C4B422;
-        backdrop-filter: blur(10px);
-        max-width: 320px;
-        margin: 0 auto 18px auto;
-        position: relative;
-        animation: cardIn 0.5s cubic-bezier(.4,1.3,.6,1);
-        transform: scale(0.95);
-        animation-fill-mode: forwards;
-      }
-      @keyframes cardIn {
-        from { opacity: 0; transform: scale(0.95); }
-        to { opacity: 1; transform: scale(1); }
-      }
-      .card h2, .register-title {
-        margin: 0 0 18px 0;
-        font-size: 32px;
-        font-weight: 700;
-        letter-spacing: 0.3px;
-        color: var(--accent);
-        font-family: 'Poppins', Arial, sans-serif;
-        text-align: center;
-      }
-      .row {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-bottom: 10px;
-      }
-      .row input,
-      .row select {
-        flex: 1 1 160px;
-        min-width: 120px;
-        max-width: 100%;
-        padding: 10px 12px;
-        border-radius: 10px;
-        border: 1px solid rgba(0,196,180,0.2);
-        background: #F9FAFB;
-        color: var(--text);
-        font-family: 'Poppins', Arial, sans-serif;
-        font-size: 15px;
-        font-weight: 400;
-        margin-bottom: 0;
-        box-shadow: none;
-        outline: none;
-        transition: border-bottom 0.22s, box-shadow 0.22s, background 0.22s, color 0.22s;
-        border-bottom: 2px solid transparent;
-        animation: inputSlideIn 0.5s cubic-bezier(.4,1.3,.6,1);
-      }
-      .row input:focus, .row select:focus {
-        border-bottom: 2px solid var(--accent);
-        background: #fff;
-      }
-      @keyframes inputSlideIn {
-        from { opacity: 0; transform: translateX(-20px); }
-        to { opacity: 1; transform: translateX(0); }
-      }
-      button {
-        padding: 12px 24px;
-        border-radius: 20px;
-        border: none;
-        background: var(--accent);
-        color: #fff;
-        cursor: pointer;
-        font-family: 'Poppins', Arial, sans-serif;
-        font-size: 18px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: 0 2px 8px #00C4B422;
-        transition: background 0.18s, transform 0.18s;
-      }
-      button:hover {
-        background: #009688;
-        transform: translateY(-2px);
-      }
-      #out {
-        white-space: pre-wrap;
-        background: rgba(255,255,255,0.7);
-        color: #4A5568;
-        padding: 12px;
-        border-radius: 10px;
-        border: 1px solid var(--accent);
-        font-family: 'Poppins', Arial, sans-serif;
-        font-size: 14px;
-      }
-      /* Hide operator card by default; JS will enable if role=OPERATOR */
-      #card-ops {
-        display: none;
-      }
-      #card-ops-admin {
-        display: none;
-      }
-      .rider-card {
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-    <main class="wrap">
-      <header class="topbar">
-        <h1>VeloShare Dashboard</h1>
-        <div id="userBadge">Not signed in</div>
-      </header>
+    }
 
-      <h2
-        id="dashboardType"
-        style="text-align: center; margin-bottom: 16px"
-      ></h2>
-      <section class="cards">
-        <div class="card">
-          <h2>Station status</h2>
-          <div class="row">
-            <input id="stationName" value="Station A" />
-            <button id="btnLoadStation">Load</button>
+    /* LEFT PANEL */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      overflow: hidden;
+    }
+
+    .hero {
+      background: #6ba8f7; /* keep brand blue */
+      color: #fff;
+      padding: 12px 14px;
+    }
+    .hero h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .dash {
+      padding: 12px;
+      overflow: auto;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+    }
+    .muted {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .user-pill {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 12.5px;
+      background: #fff;
+    }
+    .role-pill {
+      background: #111214;
+      color: #fff;
+      border-radius: 999px;
+      padding: 1px 8px 2px;
+      font-size: 11px;
+      text-transform: capitalize;
+    }
+
+    /* Tabs (segmented) */
+    .tabs {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .tab-btn {
+      border: 0;
+      background: transparent;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: rgba(14, 165, 233, 0.12);
+      color: var(--ink);
+    }
+
+    .panel {
+      display: none;
+    }
+    .panel.active {
+      display: block;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      /* margin-top: 10px; */
+      flex: 1;
+      min-width: 160px;
+    }
+    .label {
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+    .input {
+      height: 38px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 10px;
+      font: 400 14px "Inter", sans-serif;
+      transition: border 0.15s, box-shadow 0.15s;
+    }
+    .input:focus {
+      outline: 0;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.18);
+    }
+
+    .button {
+      height: 38px;
+      border: 1px solid #0f172a;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #fff;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: opacity 0.12s ease;
+    }
+    .button:hover {
+      opacity: 0.9;
+    }
+
+    .legend {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 6px 0 0;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+    .dot.green {
+      background: #22c55e;
+    }
+    .dot.yellow {
+      background: #f59e0b;
+    }
+    .dot.red {
+      background: #ef4444;
+    }
+
+    #outConsole {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      min-height: 64px;
+      max-height: 110px;
+      overflow: auto;
+      font-size: 12.5px;
+      white-space: pre-wrap;
+      padding: 6px 8px;
+    }
+
+    /* RIGHT MAP */
+    .map-shell {
+      position: relative;
+      background: #e6f1ff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Details drawer (simpler) */
+    .details {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      bottom: 10px;
+      width: min(380px, 92vw);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      transform: translateX(110%);
+      transition: transform 0.2s ease;
+      overflow: auto;
+      z-index: 2;
+    }
+    .details[aria-hidden="false"] {
+      transform: translateX(0);
+    }
+    .details-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .details-header h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .det-muted {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12.5px;
+    }
+    .det-close {
+      border: 0;
+      background: transparent;
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+      opacity: 0.7;
+    }
+    .details-body {
+      padding: 10px;
+    }
+    .det-stats {
+      display: flex;
+      gap: 14px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+    .det-kpi {
+      font-size: 18px;
+      font-weight: 800;
+    }
+    .det-subtitle {
+      margin: 12px 0 6px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .dock-grid {
+      display: grid;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .dock-grid .rowg {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr 0.6fr 0.6fr;
+    }
+    .dock-grid .cell {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+      font-size: 13px;
+    }
+    .dock-grid .head .cell {
+      background: #f2f6ff;
+      font-weight: 700;
+    }
+    .badge {
+      font-size: 12px;
+      border-radius: 999px;
+      padding: 3px 8px;
+      display: inline-block;
+      border: 1px solid var(--border);
+    }
+    .badge-ebike {
+      background: rgba(14, 165, 233, 0.12);
+    }
+    .badge-standard {
+      background: rgba(34, 197, 94, 0.12);
+    }
+    .badge-empty {
+      background: rgba(15, 23, 42, 0.04);
+    }
+    .status-badge {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 11.5px;
+    }
+    .status-red {
+      background: var(--t-red);
+    }
+    .status-yellow {
+      background: var(--t-amber);
+    }
+    .status-green {
+      background: var(--t-green);
+    }
+
+    .page {
+      height: calc(100vh - 56px);
+      display: grid;
+      grid-template-columns: minmax(340px, 500px) 1fr;
+      gap: var(--gap);
+      padding: var(--gap);
+    }
+
+
+  </style>
+</head>
+<body>
+  <!-- TOP NAVIGATION BAR -->
+    <nav class="navbar">
+      <a href="HomePage.html" class="brand">Veloshare</a>
+      <div class="nav-links">
+        <a href="pricing.html" class="btn ghost">Pricing</a>
+        <a href="billing.html" class="btn ghost">Billing</a>
+        <a href="history.html" class="btn ghost">Ride History</a>
+      </div>
+    </nav>
+
+  <div class="page">
+    <!-- LEFT -->
+    <section class="card">
+      <div class="dash">
+        <div class="header-row">
+          <div>
+            <h2 class="title">Dashboard</h2>
+            <p class="muted" id="dashSubtitle">Loading profile…</p>
           </div>
-          <pre id="station" style="margin-top: 10px"></pre>
+          <div class="user-pill" id="userPill" style="display:none;">
+            <span id="userName">@user</span>
+            <span id="userRole" class="role-pill">rider</span>
+          </div>
         </div>
 
-        <div class="card rider-card">
-          <h2>Reserve bike</h2>
-          <div class="row">
-            <input id="userId" placeholder="(optional) userId" />
-            <input id="bikeId" value="bike1" />
-            <input id="reserveStation" value="Station A" />
-            <input id="minutes" type="number" value="10" />
-            <button id="btnReserve">Reserve</button>
-          </div>
+        <div class="tabs" id="tabs">
+          <button class="tab-btn active" data-tab="dash">Dashboard</button>
         </div>
 
-        <div class="card rider-card">
-          <h2>Start trip</h2>
+        <!-- DASH PANEL -->
+        <div class="panel active" id="panel-dash">
           <div class="row">
-            <input id="startBike" value="bike1" />
-            <input id="startStation" value="Station A" />
-            <button id="btnStartTrip">Start</button>
+            <div class="field">
+              <label class="label" for="stationName">Station name</label>
+              <input class="input" id="stationName" value="Station A"/>
+            </div>
+            <div class="field" style="max-width:130px;">
+              <label class="label">&nbsp;</label>
+              <button class="button" id="btnLoadStation">Load</button>
+            </div>
           </div>
+
+          <div id="riderBlock" style="display:none;">
+            <p class="muted">Rider actions</p>
+            <div class="row">
+              <div class="field"><label class="label" for="bikeId">Bike ID</label><input class="input" id="bikeId" value="bike1"/></div>
+              <div class="field"><label class="label" for="reserveStation">Reserve at station</label><input class="input" id="reserveStation" value="Station A"/></div>
+              <div class="field" style="max-width:130px;"><label class="label">&nbsp;</label><button class="button" id="btnReserve">Reserve</button></div>
+            </div>
+            <div class="row">
+              <div class="field"><label class="label" for="startBike">Start bike</label><input class="input" id="startBike" value="bike1"/></div>
+              <div class="field"><label class="label" for="startStation">From station</label><input class="input" id="startStation" value="Station A"/></div>
+              <div class="field" style="max-width:130px;"><label class="label">&nbsp;</label><button class="button" id="btnStartTrip">Start</button></div>
+            </div>
+            <div class="row">
+              <div class="field"><label class="label" for="tripId">Trip ID</label><input class="input" id="tripId" value="trip1"/></div>
+              <div class="field"><label class="label" for="endStation">End at station</label><input class="input" id="endStation" value="Station A"/></div>
+              <div class="field" style="max-width:130px;"><label class="label">&nbsp;</label><button class="button" id="btnEndTrip">End</button></div>
+            </div>
+          </div>
+
+          <div id="opsBlock" style="display:none;">
+            <p class="muted">Operator actions</p>
+            <div class="row">
+              <div class="field"><label class="label" for="mvBikeId">Bike ID</label><input class="input" id="mvBikeId"/></div>
+              <div class="field"><label class="label" for="mvFrom">From</label><input class="input" id="mvFrom"/></div>
+              <div class="field"><label class="label" for="mvTo">To</label><input class="input" id="mvTo"/></div>
+              <div class="field" style="max-width:130px;"><label class="label">&nbsp;</label><button class="button" id="btnMove">Move</button></div>
+            </div>
+            <div class="row">
+              <div class="field"><label class="label" for="opStation">Station</label><input class="input" id="opStation"/></div>
+              <div class="field" style="max-width:110px;"><label class="label">&nbsp;</label><button class="button" id="btnStationOOS">OOS</button></div>
+              <div class="field" style="max-width:110px;"><label class="label">&nbsp;</label><button class="button" id="btnStationActive">Active</button></div>
+            </div>
+            <div class="row">
+              <div class="field"><label class="label" for="opBike">Bike</label><input class="input" id="opBike"/></div>
+              <div class="field" style="max-width:110px;"><label class="label">&nbsp;</label><button class="button" id="btnBikeMaint">Maint</button></div>
+              <div class="field" style="max-width:110px;"><label class="label">&nbsp;</label><button class="button" id="btnBikeAvail">Avail</button></div>
+            </div>
+          </div>
+
+          <div class="legend">
+            <span><span class="dot green"></span> balanced</span>
+            <span><span class="dot yellow"></span> low / almost full</span>
+            <span><span class="dot red"></span> empty/full/OOS</span>
+          </div>
+
+          <label class="label" style="margin-top:6px;">System messages</label>
+          <div id="outConsole" aria-live="polite"></div>
         </div>
 
-        <div class="card rider-card">
-          <h2>End trip</h2>
-          <div class="row">
-            <input id="tripId" value="trip1" />
-            <input id="endStation" value="Station A" />
-            <button id="btnEndTrip">End</button>
+        <!-- other tabs -->
+        <div class="panel" id="panel-pricing"><p class="muted">Pricing placeholder.</p></div>
+        <div class="panel" id="panel-billing"><p class="muted">Billing placeholder.</p></div>
+        <div class="panel" id="panel-history"><p class="muted">Ride history placeholder.</p></div>
+      </div>
+    </section>
+
+    <!-- RIGHT MAP -->
+    <div class="map-shell" aria-label="Map of bike stations">
+      <div id="map"></div>
+
+      <!-- Station details drawer -->
+      <aside id="detailsDrawer" class="details" aria-hidden="true">
+        <div class="details-header">
+          <div>
+            <h3 id="detName">Station</h3>
+            <p class="det-muted"><span id="detAddress">—</span> • <span id="detStatus" class="status-badge">—</span></p>
           </div>
+          <button id="detClose" class="det-close" aria-label="Close">&times;</button>
         </div>
-
-        <div class="card rider-card">
-          <h2>Cancel reservation</h2>
-          <div class="row">
-            <input id="resId" placeholder="reservation id" />
-            <button id="btnCancel">Cancel Reservation</button>
+        <div class="details-body">
+          <div class="det-stats">
+            <div><div class="det-kpi" id="detOcc">0 / 0</div><div class="det-muted">Occupancy</div></div>
+            <div><div class="det-kpi" id="detAvail">0</div><div class="det-muted">Docks available</div></div>
           </div>
+
+          <h4 class="det-subtitle">Docks</h4>
+          <div id="dockGrid" class="dock-grid"></div>
+          <p id="dockEmpty" class="det-muted" style="display:none;">No dock data.</p>
         </div>
+      </aside>
+    </div>
+  </div>
 
-        <div class="card" id="card-ops">
-          <h2>Move Bike</h2>
-          <div class="row">
-            <input id="mvBikeId" placeholder="Bike ID" />
-            <input id="mvFrom" placeholder="From station" />
-            <input id="mvTo" placeholder="To station" />
-            <button id="btnMove">Move</button>
-          </div>
-        </div>
+  <!-- GOOGLE MAP -->
+  <script>
+    const VLS_LIGHT=[
+      {elementType:"geometry",stylers:[{color:"#f8fafc"}]},
+      {elementType:"labels.text.fill",stylers:[{color:"#475569"}]},
+      {elementType:"labels.text.stroke",stylers:[{color:"#ffffff"}]},
+      {featureType:"water",elementType:"geometry",stylers:[{color:"#c9e6ff"}]},
+      {featureType:"poi",elementType:"labels.icon",stylers:[{visibility:"off"}]},
+      {featureType:"transit",stylers:[{visibility:"off"}]},
+      {featureType:"road",elementType:"geometry",stylers:[{color:"#ffffff"}]},
+      {featureType:"road",elementType:"labels.text.fill",stylers:[{color:"#334155"}]},
+      {featureType:"road.highway",elementType:"geometry",stylers:[{color:"#fef3c7"}]},
+      {featureType:"administrative",elementType:"geometry",stylers:[{visibility:"off"}]}
+    ];
 
-        <div class="card" id="card-ops-admin">
-          <h2>Station & Bike Status</h2>
-          <div class="row" style="margin-bottom: 8px">
-            <input id="opStation" placeholder="Station Name" />
-            <button id="btnStationOOS">Set Station OOS</button>
-            <button id="btnStationActive">Set Station Active</button>
-          </div>
-          <div class="row">
-            <input id="opBike" placeholder="Bike ID" />
-            <button id="btnBikeMaint">Set Bike Maintenance</button>
-            <button id="btnBikeAvail">Set Bike Available</button>
-          </div>
-        </div>
-      </section>
+    const markerSvgEncoded = (fill="#3B82F6") => {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42" fill="none">
+        <path d="M16 41s12-11.2 12-23A12 12 0 0 0 4 18c0 11.8 12 23 12 23z" fill="${fill}"/>
+        <circle cx="16" cy="18" r="5.5" fill="white"/></svg>`;
+      return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg.trim());
+    };
+    const markerIcon = (fill) => ({url: markerSvgEncoded(fill), scaledSize: new google.maps.Size(32,42)});
 
-      <section style="margin-top: 14px">
-        <h3>Output</h3>
-        <div id="out"></div>
-      </section>
-    </main>
+    const colorForStation = (s) => {
+    const cap = Number(s.capacity)||0;
+    const bikes = Array.isArray(s.bikes) ? s.bikes.length : Number(s.bikesAvailable ?? 0);
+    if (!cap || bikes===0 || bikes===cap) return '#ef4444';
+    const pct = (bikes/cap)*100;
+    if (pct<25 || pct>85) return '#f59e0b';
+    return '#22c55e';
+  };
 
-    <!-- Load Firebase & auth -->
-    <script type="module" src="./firebase.js"></script>
-    <script type="module" src="./auth.js"></script>
 
-    <!-- Wire the dashboard actions -->
-    <script type="module">
-      import { auth } from "./firebase.js";
-      import { authFetch } from "./auth.js";
-      import {
-        loadStation,
-        reserve,
-        startTrip,
-        endTrip,
-        cancelReservation,
-        moveBike,
-        getProfile,
-        setStationOOS,
-        setStationActive,
-        setBikeMaintenance,
-        setBikeAvailable,
-      } from "./dashboard.js";
+    const pickPos = (s) => {
+      const lat = Number(s.latitude ?? s.lat), lng = Number(s.longitude ?? s.lon ?? s.lng);
+      return (Number.isFinite(lat)&&Number.isFinite(lng)) ? {lat,lng} : null;
+    };
 
-      const $ = (sel) => document.querySelector(sel);
-      const out = (m) => ($("#out").textContent += m + "\n");
+    const drawer = {
+      el: () => document.getElementById('detailsDrawer'),
+      open(s){const el=this.el(); if(!el) return; el.setAttribute('aria-hidden','false'); this.render(s);},
+      close(){this.el()?.setAttribute('aria-hidden','true');},
+      render(s){
+  const n=document.getElementById('detName'),
+        a=document.getElementById('detAddress'),
+        occ=document.getElementById('detOcc'),
+        av=document.getElementById('detAvail'),
+        grid=document.getElementById('dockGrid'),
+        empty=document.getElementById('dockEmpty'),
+        status=document.getElementById('detStatus');
 
-      function showOpsCards(show) {
-        const ids = ["card-ops", "card-ops-admin"];
-        ids.forEach((id) => {
-          const el = document.getElementById(id);
-          if (el) el.style.display = show ? "block" : "none";
-        });
-      } // operator-only cards are hidden/displayed depending on user
+  n.textContent = s.name ?? 'Station';
+  a.textContent = s.address ?? '—';
 
-      function showRiderCards(show) {
-        const riderCards = document.querySelectorAll(".rider-card");
-        riderCards.forEach((el) => {
-          el.style.display = show ? "block" : "none";
-        });
-      }
+  const cap   = Number(s.capacity ?? 0);
+  const bikes = Array.isArray(s.bikes) ? s.bikes : [];
+  const present = Number.isFinite(s.bikesAvailable) ? Number(s.bikesAvailable) : bikes.length;
+  const free    = Number.isFinite(s.freeDocks) ? Number(s.freeDocks) : Math.max(cap - present, 0);
 
-      auth.onAuthStateChanged(async (u) => {
-        const dashTitle = document.getElementById("dashboardType");
+  occ.textContent = `${present} / ${cap}`;
+  av.textContent  = `${free}`;
 
-        if (u) {
-          $("#userBadge").textContent = `UID: ${u.uid}`;
-          const me = await getProfile();
-          const isOperator = me?.role === "OPERATOR";
+  status.className = 'status-badge ' + (
+    !cap || present===0 || present===cap ? 'status-red' :
+    (present/cap < .25 || present/cap > .85) ? 'status-yellow' : 'status-green'
+  );
+  status.textContent = 'Active';
 
-          showOpsCards(isOperator);
-          showRiderCards(!isOperator);
+  // Bike type breakdown
+const std = (s.bikes || []).filter(b => String(b.type).toLowerCase()==='standard').length;
+const eb  = (s.bikes || []).filter(b => String(b.type).toLowerCase()==='e-bike').length;
 
-          dashTitle.textContent = isOperator
-            ? "Operator Dashboard"
-            : "Rider Dashboard";
-        } else {
-          $("#userBadge").textContent = "Not signed in";
-          showOpsCards(false);
-          showRiderCards(false);
-          dashTitle.textContent = "";
-        }
+
+  grid.innerHTML = `
+    <div class="det-subtitle">Bikes</div>
+    <div class="det-stats" style="margin-top:6px;">
+      <div><div class="det-kpi">${std}</div><div class="det-muted">Standard</div></div>
+      <div><div class="det-kpi">${eb}</div><div class="det-muted">E-bike</div></div>
+    </div>
+  `;
+  empty.style.display = 'none';
+}
+
+    };
+
+    document.addEventListener('click', e => { if(e.target?.id==='detClose') drawer.close(); });
+    document.addEventListener('keydown', e => { if(e.key==='Escape') drawer.close(); });
+
+
+    let map;
+    const markers = {}; // name -> google.maps.Marker
+    // Global station cache for status updates
+    window.stationCache = window.stationCache || new Map();
+    const stationCache = window.stationCache;
+    const setMarkerColor = (stationName, color) => {
+      const marker = markers[stationName];
+      if (marker) marker.setIcon(markerIcon(color));
+    };
+
+    async function initMap(){
+      map = new google.maps.Map(document.getElementById('map'), {
+        center:{lat:45.51,lng:-73.58}, zoom:12, styles:VLS_LIGHT,
+        streetViewControl:false, fullscreenControl:false, mapTypeControl:false
       });
+      try{
+        const res = await fetch('/api/stations',{cache:'no-store'});
+        if(!res.ok) throw new Error(`GET /api/stations -> ${res.status}`);
+        const stations = await res.json();
+        const bounds = new google.maps.LatLngBounds();
+        stations.forEach(s=>{
+          const pos = pickPos(s); if(!pos) return;
+          const m = new google.maps.Marker({
+            map, position: pos, title: s.name,
+            icon: markerIcon(colorForStation(s))
+          });
+          markers[s.name] = m; // <— keep a reference
+          // Add to global station cache
+          stationCache.set(s.name, s);
 
-      $("#btnLoadStation").onclick = async () => {
-        try {
-          const name = $("#stationName").value.trim();
-          const data = await loadStation(name);
-          out(`GET /api/stations/${encodeURIComponent(name)} -> OK`);
-          $("#station").textContent = JSON.stringify(data, null, 2);
-        } catch (e) {
-          out("Load failed: " + e.message);
-        }
-      };
-
-      $("#btnReserve").onclick = async () => {
-        try {
-          const bodyUserId = $("#userId").value.trim();
-          const uid = auth.currentUser?.uid ?? "";
-          await reserve(
-            bodyUserId || uid,
-            $("#bikeId").value.trim(),
-            $("#reserveStation").value.trim(),
-            Number($("#minutes").value)
-          );
-          out("POST /api/reservations -> OK");
-        } catch (e) {
-          out("Reserve failed: " + e.message);
-        }
-      };
-
-      $("#btnStartTrip").onclick = async (ev) => {
-        const btn = ev.currentTarget;
-        btn.disabled = true;
-
-        const clickTag = Math.random().toString(36).slice(2);
-        console.log("[UI] Start clicked tag=", clickTag, "payload=", {
-          bikeId: $("#startBike").value.trim(),
-          stationName: $("#startStation").value.trim(),
+          m.addListener('click', async () => {
+            ['stationName','reserveStation','startStation','endStation','mvFrom','opStation']
+              .forEach(id => { const el=document.getElementById(id); if(el) el.value=s.name; });
+            try{
+              const det = await fetch(`/api/stations/${encodeURIComponent(s.name)}`,{cache:'no-store'});
+              drawer.open(det.ok ? await det.json() : s);
+            }catch{ drawer.open(s); }
+          });
+          bounds.extend(pos);
         });
 
+        if(!bounds.isEmpty()) map.fitBounds(bounds);
+      }catch(e){ console.warn('could not load stations', e); }
+    }
+    window.initMap=initMap;
+  </script>
+
+  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDBKGrjRztQ1CRAdSWw9nOFnttSCrI9Q4A&callback=initMap"></script>
+
+  <!-- firebase + app logic -->
+  <script type="module" src="./firebase.js"></script>
+  <script type="module" src="./auth.js"></script>
+  <script type="module">
+
+    
+    import { auth } from "./firebase.js";
+    import {
+      loadStation,reserve,startTrip,endTrip,moveBike,getProfile,
+      setStationOOS,setStationActive,setBikeMaintenance,setBikeAvailable,
+    } from "./dashboard.js";
+
+    const $ = (s) => document.querySelector(s);
+    const log = (m) => {
+      const box = $("#outConsole");
+      box.textContent = `[${new Date().toLocaleTimeString()}] ${m}\n` + box.textContent;
+    };
+
+    // Tabs
+    $("#tabs").addEventListener("click", (e) => {
+      const b = e.target.closest(".tab-btn"); if (!b) return;
+      const tab = b.dataset.tab;
+      document.querySelectorAll(".tab-btn").forEach(x => x.classList.toggle("active", x===b));
+      document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id==="panel-"+tab));
+    });
+
+    const showRider = (show) => { $("#riderBlock").style.display = show ? "block" : "none"; };
+    const showOps   = (show) => { $("#opsBlock").style.display   = show ? "block" : "none"; };
+
+    auth.onAuthStateChanged(async (u) => {
+      if (u) {
+        $("#userPill").style.display = "flex";
+        $("#userName").textContent = "@"+u.uid;
         try {
-          const tripId = await startTrip({
-            bikeId: $("#startBike").value.trim(),
-            stationName: $("#startStation").value.trim(),
-          });
-          $("#tripId").value = tripId;
-          out(`POST /api/trips/start -> OK (tripId=${tripId}) [${clickTag}]`);
-        } catch (e) {
-          out("Start failed: " + e.message + ` [${clickTag}]`);
-        } finally {
-          btn.disabled = false;
+          const me = await getProfile();
+          const role = (me.role || "rider").toLowerCase();
+          $("#userRole").textContent = role;
+          $("#dashSubtitle").textContent = role === "operator" ? "Operator tools enabled." : "Rider tools enabled.";
+          showRider(role !== "operator"); showOps(role === "operator");
+        } catch {
+          $("#dashSubtitle").textContent = "Profile missing, default to rider.";
+          showRider(true); showOps(false);
         }
-      };
+      } else {
+        $("#userPill").style.display = "none";
+        $("#dashSubtitle").textContent = "Sign in to unlock actions.";
+        showRider(false); showOps(false);
+      }
+    });
 
-      $("#btnEndTrip").onclick = async () => {
-        try {
-          await endTrip({
-            tripId: $("#tripId").value.trim(),
-            stationName: $("#endStation").value.trim(),
-          });
-          out("POST /api/trips/end -> OK");
-        } catch (e) {
-          out("End failed: " + e.message);
-        }
-      };
+  // Buttons
 
-      $("#btnCancel").onclick = async () => {
-        try {
-          const id = $("#resId").value.trim();
-          if (!id) return out("Cancel: missing reservation id");
-          await cancelReservation(id);
-          out(`DELETE /api/reservations/${id} -> OK`);
-        } catch (e) {
-          out("Cancel failed: " + e.message);
-        }
-      };
-
-      $("#btnMove").onclick = async () => {
-        try {
-          await moveBike({
-            bikeId: $("#mvBikeId").value.trim(),
-            fromStation: $("#mvFrom").value.trim(),
-            toStation: $("#mvTo").value.trim(),
-          });
-          out("POST /api/ops/move-bike -> OK");
-        } catch (e) {
-          out("Move failed: " + e.message);
-        }
-      };
-
-      const elStationOOS = $("#btnStationOOS");
-      if (elStationOOS)
-        elStationOOS.onclick = async () => {
-          try {
-            await setStationOOS($("#opStation").value.trim());
-            out("POST /api/ops/stations/{name}/oos -> OK");
-          } catch (e) {
-            out("Set Station OOS failed: " + e.message);
-          }
-        };
-
-      const elStationActive = $("#btnStationActive");
-      if (elStationActive)
-        elStationActive.onclick = async () => {
-          try {
-            await setStationActive($("#opStation").value.trim());
-            out("POST /api/ops/stations/{name}/active -> OK");
-          } catch (e) {
-            out("Set Station Active failed: " + e.message);
-          }
-        };
-
-      const elBikeMaint = $("#btnBikeMaint");
-      if (elBikeMaint)
-        elBikeMaint.onclick = async () => {
-          try {
-            await setBikeMaintenance($("#opBike").value.trim());
-            out("POST /api/ops/bikes/{id}/maintenance -> OK");
-          } catch (e) {
-            out("Set Bike Maintenance failed: " + e.message);
-          }
-        };
-
-      const elBikeAvail = $("#btnBikeAvail");
-      if (elBikeAvail)
-        elBikeAvail.onclick = async () => {
-          try {
-            await setBikeAvailable($("#opBike").value.trim());
-            out("POST /api/ops/bikes/{id}/available -> OK");
-          } catch (e) {
-            out("Set Bike Available failed: " + e.message);
-          }
-        };
-    </script>
-  </body>
+    $("#btnLoadStation").onclick = async () => {
+      try { const name = $("#stationName").value.trim(); await loadStation(name); log("Loaded station " + name); }
+      catch (e) { log("Load failed: " + e.message); }
+    };
+    $("#btnReserve").onclick = async () => {
+      try {
+        const uid = auth.currentUser?.uid ?? "";
+        await reserve(uid, $("#bikeId").value.trim(), $("#reserveStation").value.trim(), 10);
+        log("Reservation OK");
+      } catch (e) { log("Reserve failed: " + e.message); }
+    };
+    $("#btnStartTrip").onclick = async () => {
+      try {
+        const tripId = await startTrip({ bikeId: $("#startBike").value.trim(), stationName: $("#startStation").value.trim() });
+        $("#tripId").value = tripId; log("Trip started: " + tripId);
+      } catch (e) { log("Start failed: " + e.message); }
+    };
+    $("#btnEndTrip").onclick = async () => {
+      try { await endTrip({ tripId: $("#tripId").value.trim(), stationName: $("#endStation").value.trim() }); log("Trip ended"); }
+      catch (e) { log("End failed: " + e.message); }
+    };
+    $("#btnMove").onclick = async () => {
+      try {
+        await moveBike({ bikeId: $("#mvBikeId").value.trim(), fromStation: $("#mvFrom").value.trim(), toStation: $("#mvTo").value.trim() });
+        log("Move OK");
+      } catch (e) { log("Move failed: " + e.message); }
+    };
+    $("#btnStationOOS").onclick = async () => {
+      try {
+        const name = $("#opStation").value.trim();
+        await setStationOOS(name);
+        log("Station OOS");
+        // mark red for OOS (use global setter if available)
+        (window.setMarkerColor ?? setMarkerColor)?.(name, "#ef4444");
+      } catch (e) { log("OOS failed: " + e.message); }
+    };
+    $("#btnStationActive").onclick = async () => {
+      try {
+        const name = $("#opStation").value.trim();
+        await setStationActive(name);
+        log("Station active");
+        // Recolor based on current status (green/yellow/red logic)
+        const s = stationCache?.get?.(name);
+        const color = s ? colorForStation(s) : "#22c55e";
+        (window.setMarkerColor ?? setMarkerColor)?.(name, color);
+      } catch (e) { log("Active failed: " + e.message); }
+    };
+    $("#btnBikeAvail").onclick = async () => {
+      try { await setBikeAvailable($("#opBike").value.trim()); log("Bike -> available"); }
+      catch(e){ log("Avail failed: " + e.message); }
+    };
+  </script>
+</body>
 </html>

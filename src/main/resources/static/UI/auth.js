@@ -74,7 +74,7 @@ if (registerForm) {
     usernameStatus.textContent = taken
       ? "Username is already taken"
       : "Username is available";
-    usernameStatus.className = taken ? "hint error" : "hint ok";
+    usernameStatus.className = taken ? "error" : "ok";
   });
 
   registerForm.addEventListener("submit", async (e) => {
