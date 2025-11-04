@@ -7,6 +7,14 @@ export async function loadStation(name) {
   return data;
 }
 
+export async function stationSummaryText(data) {
+  return (
+    `Address: ${data.address || "N/A"}\n` +
+    `Standard bikes: ${data.standardBikes ?? 0}\n` +
+    `E-bikes: ${data.eBikes ?? 0}`
+  );
+}
+
 export async function reserve(userId, bikeId, stationName, minutes) {
   const res = await authFetch(`/api/reservations`, {
     method: "POST",

@@ -34,8 +34,11 @@ public class bmsService {
             int arrEnd = -1;
             for (int i = arrStart; i < content.length(); i++) {
                 char c = content.charAt(i);
-                if (c == '[') depth++;
-                else if (c == ']') depth--;
+                if (c == '[') {
+                    depth++;
+                } else if (c == ']') {
+                    depth--;
+                }
                 if (depth == 0) {
                     arrEnd = i;
                     break;
@@ -54,7 +57,9 @@ public class bmsService {
             for (int i = 0; i < stationsArray.length(); i++) {
                 char c = stationsArray.charAt(i);
                 if (c == '{') {
-                    if (objDepth == 0) start = i;
+                    if (objDepth == 0) {
+                        start = i;
+                    }
                     objDepth++;
                 } else if (c == '}') {
                     objDepth--;
@@ -73,6 +78,7 @@ public class bmsService {
                 String latS = findNumber(raw, "latitude");
                 String lonS = findNumber(raw, "longitude");
                 String capS = findNumber(raw, "capacity");
+                String address = findString(raw, "address");
                 if (name == null || latS == null || lonS == null || capS == null) {
                     continue;
                 }
@@ -81,7 +87,7 @@ public class bmsService {
                 double longitude = Double.parseDouble(lonS);
                 int capacity = Integer.parseInt(capS);
 
-                Station station = new Station(name, latitude, longitude, capacity);
+                Station station = new Station(name, latitude, longitude, capacity, address);
                 stations.put(name, station);
 
                 // extract bikes array inside this station object
@@ -93,8 +99,9 @@ public class bmsService {
                         int bEnd = -1;
                         for (int i = bStart; i < raw.length(); i++) {
                             char c = raw.charAt(i);
-                            if (c == '[') depthB++;
-                            else if (c == ']') {
+                            if (c == '[') {
+                                depthB++;
+                            } else if (c == ']') {
                                 depthB--;
                                 if (depthB == 0) {
                                     bEnd = i;
@@ -111,7 +118,9 @@ public class bmsService {
                                 for (int i = 0; i < bikesArray.length(); i++) {
                                     char c = bikesArray.charAt(i);
                                     if (c == '{') {
-                                        if (bikeDepth == 0) bObjStart = i;
+                                        if (bikeDepth == 0) {
+                                            bObjStart = i;
+                                        }
                                         bikeDepth++;
                                     } else if (c == '}') {
                                         bikeDepth--;
@@ -126,7 +135,7 @@ public class bmsService {
                                     String type = findString(braw, "type");
                                     if (id != null && !id.isBlank()) {
                                         addBikeToStation(name, id,
-                                            (type != null && !type.isBlank()) ? type : "standard");
+                                                (type != null && !type.isBlank()) ? type : "standard");
                                     }
                                 }
                             }
@@ -138,7 +147,7 @@ public class bmsService {
             emit(new Event("CONFIG_LOADED", "Configuration loaded from file", "Stations: " + stations.size()));
         } catch (IOException | NumberFormatException e) {
             throw new IllegalStateException("Failed to load config file: " + e.getMessage(), e);
-       }
+        }
     }
 
     private static String findString(String obj, String key) {
@@ -254,7 +263,7 @@ public class bmsService {
         }
         if (bike.isOnTrip()) {
             throw new IllegalStateException("Bike " + bikeId + " is currently on a trip");
-        }   
+        }
 
         fromDock.release();
         startStation.updateCounts();
@@ -286,13 +295,13 @@ public class bmsService {
         Dock dock = endStation.getDocks().stream()
                 .filter(d -> d.getStatus() == DockStatus.FREE)
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No free docks at " + endStation.getName()));
+                .orElseThrow(() -> new IllegalStateException("No free docks at " + endStation.getName() + ". Please return your bike to another nearby station"));
 
         Bike bike = trip.getBike();
         if (bike == null) {
             System.out.println("WARN DEBUG: trip " + tripId + " has null bike");
             bike = new Bike(trip.getBikeId(), "standard");
-            trip.setBike(bike); 
+            trip.setBike(bike);
         }
 
         bike.endTrip(); //bike is switched back to available was confirmed with debug
@@ -308,7 +317,7 @@ public class bmsService {
 
     public void reserveBike(String userId, String bikeId, int holdMinutes, Station station) {
         if (activeReservations.values().stream().anyMatch(r -> r.getUserId().equals(userId) && r.isValid())) {
-            throw new IllegalStateException("User " + userId + " already has an active reservation");
+            throw new IllegalStateException("User already has an active reservation");
         }
 
         Dock dock = station.getDocks().stream()
@@ -328,7 +337,7 @@ public class bmsService {
         }
 
         Reservation reservation = new Reservation("res" + bikeId + userId, bikeId, userId, holdMinutes);
-        bike.reserve(reservation.getExpiresAt()); 
+        bike.reserve(reservation.getExpiresAt());
         System.out.println(bike.getState()); //debug
 
         activeReservations.put(reservation.getReservationId(), reservation);
@@ -359,7 +368,7 @@ public class bmsService {
         Dock fromDock = fromStation.getDocks().stream()
                 .filter(d -> d.getBike() != null && d.getBike().getId().equals(bikeId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("[reserveBike] Bike " + bikeId + " not found at station"));
+                .orElseThrow(() -> new IllegalStateException("Bike " + bikeId + " not found at station"));
 
         Bike bike = fromDock.getBike();
         fromDock.release();

@@ -11,12 +11,14 @@ public class Station {
     private int capacity;
     private List<Dock> docks;
     private boolean outOfService;
+    private String address;
 
-    public Station(String name, double latitude, double longitude, int capacity) {
+    public Station(String name, double latitude, double longitude, int capacity, String address) {
         this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;
         this.capacity = capacity;
+        this.address = address;
         this.docks = new ArrayList<>();
         for (int i = 0; i < capacity; i++) {
             docks.add(new Dock(i, i)); // position = dockId 
@@ -37,6 +39,10 @@ public class Station {
 
     public int getCapacity() {
         return capacity;
+    }
+
+    public String getAddress() {
+        return address;
     }
 
     public List<Dock> getDocks() {
