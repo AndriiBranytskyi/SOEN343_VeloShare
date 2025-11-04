@@ -4,6 +4,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.veloshare.application.billing.BillingService;
+import com.veloshare.application.billing.MockPaymentGateway;
+import com.veloshare.application.billing.PaymentGateway;
 import com.veloshare.application.usecases.OperatorService;
 import com.veloshare.application.usecases.ReservationService;
 import com.veloshare.application.usecases.StationService;
@@ -11,6 +14,8 @@ import com.veloshare.application.usecases.TripService;
 import com.veloshare.auth.RolesRepo;
 import com.veloshare.domain.Role;
 import com.veloshare.domain.bmsService;
+import com.veloshare.domain.pricing.PricePerMinutePolicy;
+import com.veloshare.domain.pricing.PricingPolicy;
 
 //bean is an object managed by Spring that helps provide domain to Spring framework
 @Configuration
@@ -26,6 +31,25 @@ public class Beans {
         return bms;
     }
 
+    // billing related beans
+    @Bean
+    public PricingPolicy pricingPolicy() {
+        // Base fee: $2, Rate: $0.10/min
+        return new PricePerMinutePolicy(2.00, 0.10);
+    }
+
+    @Bean
+    public PaymentGateway paymentGateway() {
+        // Simple mock gateway — prints payments to console
+        return new MockPaymentGateway();
+    }
+
+    @Bean
+    public BillingService billingService(PricingPolicy pricingPolicy, PaymentGateway paymentGateway) {
+        return new BillingService(pricingPolicy, paymentGateway);
+    }
+
+    // application use case beans
     @Bean
     public StationService stationService(bmsService bms) {
         return new StationService(bms);
