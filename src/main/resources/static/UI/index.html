@@ -286,6 +286,57 @@
       .dot.red {
         background: #ef4444;
       }
+      .station-info {
+        margin-top: 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 10px;
+        background: #f8fafc;
+        font-size: 13px;
+      }
+      .station-info-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+      }
+      .station-info-name {
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .station-info-address {
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 6px;
+      }
+      .station-info-grid {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 4px;
+      }
+      .station-info-kpi .kpi-label {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .station-info-kpi .kpi-value {
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .station-info-sub {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .station-info-pill {
+        font-size: 11px;
+        border-radius: 999px;
+        padding: 2px 8px;
+        border: 1px solid var(--border);
+      }
+      .station-debug summary {
+        cursor: pointer;
+        font-size: 12px;
+      }
 
       #outConsole {
         background: #fff;
@@ -485,8 +536,45 @@
               </div>
             </div>
 
-            <pre id="station" style="margin-top: 10px"></pre>
-            <div id="stationSummary"></div>
+            <div id="stationInfo" class="station-info" style="display: none">
+              <div class="station-info-header">
+                <div>
+                  <div class="station-info-name" id="stInfoName">Station</div>
+                  <div class="station-info-address" id="stInfoAddress">
+                    Address: —
+                  </div>
+                </div>
+                <span class="station-info-pill" id="stInfoStatus">Active</span>
+              </div>
+              <div class="station-info-grid">
+                <div class="station-info-kpi">
+                  <span class="kpi-label">Bikes</span>
+                  <span class="kpi-value" id="stInfoBikes">0</span>
+                </div>
+                <div class="station-info-kpi">
+                  <span class="kpi-label">Capacity</span>
+                  <span class="kpi-value" id="stInfoCapacity">0</span>
+                </div>
+                <div class="station-info-kpi">
+                  <span class="kpi-label">Free docks</span>
+                  <span class="kpi-value" id="stInfoFree">0</span>
+                </div>
+              </div>
+              <div class="station-info-sub">
+                <span id="stInfoStd">Standard: 0</span>
+                &nbsp;•&nbsp;
+                <span id="stInfoEb">E-bikes: 0</span>
+              </div>
+            </div>
+
+            <details
+              id="stationDebug"
+              class="station-debug"
+              style="margin-top: 6px"
+            >
+              <summary class="label">Debug station JSON</summary>
+              <pre id="station" style="margin-top: 6px"></pre>
+            </details>
 
             <div id="riderBlock" style="display: none">
               <p class="muted">Rider actions</p>
@@ -702,13 +790,15 @@
       });
 
       const colorForStation = (s) => {
+        if (s.outOfService) return "#ef4444"; //keep it always red if OOS for rider+operator view
+
         const cap = Number(s.capacity) || 0;
         const bikes = Array.isArray(s.bikes)
           ? s.bikes.length
           : Number(s.bikesAvailable ?? 0);
         if (!cap || bikes === 0 || bikes === cap) return "#ef4444";
         const pct = (bikes / cap) * 100;
-        if (pct > 75) return "#f59e0b";
+        if (pct <= 25 || pct >= 75) return "#f59e0b"; //changed capacity to handle when low+almost full
         return "#22c55e";
       };
 
@@ -763,7 +853,7 @@
               ? "status-red"
               : !cap || present === 0 || present === cap
               ? "status-red"
-              : present / cap > 0.75
+              : present / cap >= 0.75
               ? "status-yellow"
               : "status-green");
 
@@ -887,9 +977,9 @@
     <script type="module" src="./auth.js"></script>
     <script type="module">
       import { auth } from "./firebase.js";
+      import { getCurrentUsername } from "./auth.js";
       import {
         loadStation,
-        stationSummaryText,
         reserve,
         startTrip,
         endTrip,
@@ -915,6 +1005,7 @@
       //timer for current trip
       let currentTripId = null;
       let currentTripStart = null;
+      let currentTripStartStation = null;
       let tripTimerHandle = null;
 
       function updateTripStatus() {
@@ -957,7 +1048,14 @@
       auth.onAuthStateChanged(async (u) => {
         if (u) {
           $("#userPill").style.display = "flex";
-          $("#userName").textContent = "@" + u.uid;
+          let displayName;
+          try {
+            displayName = await getCurrentUsername();
+          } catch {
+            displayName = u.email || u.uid;
+          }
+          $("#userName").textContent = displayName;
+
           try {
             const me = await getProfile();
             const role = (me.role || "rider").toLowerCase();
@@ -991,10 +1089,62 @@
 
           log(`GET /api/stations/${encodeURIComponent(name)} -> OK`);
 
-          $("#station").textContent = JSON.stringify(data, null, 2);
+          // Fill the nicer info card
+          const info = document.getElementById("stationInfo");
+          if (info && data) {
+            info.style.display = "block";
 
-          const summaryEl = document.getElementById("stationSummary");
-          summaryEl.textContent = stationSummaryText(data);
+            const cap = Number(data.capacity ?? 0);
+            const bikesArr = Array.isArray(data.bikes) ? data.bikes : [];
+            const present = Number.isFinite(data.bikesAvailable)
+              ? Number(data.bikesAvailable)
+              : bikesArr.length;
+            const free = Number.isFinite(data.freeDocks)
+              ? Number(data.freeDocks)
+              : Math.max(cap - present, 0);
+
+            const std =
+              typeof data.standardBikes === "number"
+                ? data.standardBikes
+                : bikesArr.filter(
+                    (b) => String(b.type).toLowerCase() === "standard"
+                  ).length;
+
+            const eb =
+              typeof data.eBikes === "number"
+                ? data.eBikes
+                : bikesArr.filter(
+                    (b) => String(b.type).toLowerCase() === "e-bike"
+                  ).length;
+
+            document.getElementById("stInfoName").textContent =
+              data.name || name || "Station";
+            document.getElementById("stInfoAddress").textContent =
+              "Address: " + (data.address || "N/A");
+            document.getElementById("stInfoBikes").textContent = present;
+            document.getElementById("stInfoCapacity").textContent = cap;
+            document.getElementById("stInfoFree").textContent = free;
+            document.getElementById(
+              "stInfoStd"
+            ).textContent = `Standard: ${std}`;
+            document.getElementById("stInfoEb").textContent = `E-bikes: ${eb}`;
+
+            // Simple status pill text (Active/OOS) based on outOfService flag
+            const pill = document.getElementById("stInfoStatus");
+            if (pill) {
+              if (data.outOfService) {
+                pill.textContent = "OOS";
+              } else {
+                pill.textContent = "Active";
+              }
+            }
+          }
+
+          // Keep raw JSON for debugging (collapsed)
+          const debugPre = document.getElementById("station");
+          if (debugPre) {
+            debugPre.textContent = JSON.stringify(data, null, 2);
+          }
         } catch (e) {
           log("Load failed: " + e.message);
         }
@@ -1032,9 +1182,12 @@
 
           currentTripId = tripId;
           currentTripStart = Date.now();
+          currentTripStartStation = stationName;
           if (tripTimerHandle) clearInterval(tripTimerHandle);
           tripTimerHandle = setInterval(updateTripStatus, 1000);
           updateTripStatus();
+
+          await refreshStation(stationName);
         } catch (e) {
           log("Start failed: " + e.message);
         } finally {
@@ -1048,12 +1201,23 @@
           await endTrip({ tripId, stationName });
           log("Trip ended");
 
+          //where bike was taken from
+          if (currentTripStartStation) {
+            await refreshStation(currentTripStartStation);
+          }
+          //where bike is returned
+          await refreshStation(stationName);
+
           if (currentTripId === tripId && currentTripStart) {
             const elapsedMs = Date.now() - currentTripStart;
             const elapsedMin = Math.floor(elapsedMs / 60000);
             const elapsedSec = Math.floor((elapsedMs % 60000) / 1000);
+
+            const from = currentTripStartStation || "(unknown)";
+            const to = stationName || "(unknown)";
+
             log(
-              `Trip summary: ${elapsedMin} min ${elapsedSec
+              `Trip summary: ${from} -> ${to} — ${elapsedMin} min ${elapsedSec
                 .toString()
                 .padStart(2, "0")} sec`
             );
@@ -1061,6 +1225,7 @@
 
           currentTripId = null;
           currentTripStart = null;
+          currentTripStartStation = null;
           if (tripTimerHandle) clearInterval(tripTimerHandle);
           tripTimerHandle = null;
           updateTripStatus();
@@ -1097,6 +1262,28 @@
           }
         } catch (e) {
           console.warn("refreshStationsAfterMove failed", e);
+        }
+      }
+
+      //Refresh map + drawer
+      async function refreshStation(stationName) {
+        if (!stationName) return;
+        try {
+          const data = await loadStation(stationName);
+          if (!data) return;
+
+          //Update cache and marker color
+          stationCache.set(stationName, data);
+          setMarkerColor(stationName, colorForStation(data));
+
+          //If station is open in the rhs drawer -> re-render
+          const detNameEl = document.getElementById("detName");
+          const currentShown = detNameEl?.textContent || "";
+          if (currentShown === stationName) {
+            drawer.open(data);
+          }
+        } catch (e) {
+          console.warn("refreshStation failed", e);
         }
       }
 
@@ -1139,7 +1326,7 @@
             return;
           }
 
-          // when its OK to move -> backend
+          //when its OK to move -> backend
           await moveBike({ bikeId, fromStation, toStation });
           log("POST /api/ops/move-bike -> OK");
           //refresh after
@@ -1156,7 +1343,7 @@
           const name = $("#opStation").value.trim();
           await setStationOOS(name);
           log("Station OOS");
-          // mark red for OOS (use global setter if available)
+
           (window.setMarkerColor ?? setMarkerColor)?.(name, "#ef4444");
 
           const detNameEl = document.getElementById("detName");
@@ -1179,7 +1366,7 @@
           const name = $("#opStation").value.trim();
           await setStationActive(name);
           log("Station active");
-          // Recolor based on current status (green/yellow/red logic)
+
           const s = stationCache?.get?.(name);
           const color = s ? colorForStation(s) : "#22c55e";
           (window.setMarkerColor ?? setMarkerColor)?.(name, color);

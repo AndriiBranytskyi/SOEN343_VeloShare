@@ -22,20 +22,20 @@ const usernameExists = (u) => exists(`usernames/${u.trim().toLowerCase()}`);
 
 // Check if user is an operator
 const checkOperatorRole = async (uid) => {
-    const userRoleRef = ref(db, `users/${uid}/role`);
-    const snapshot = await get(userRoleRef);
-    return snapshot.exists() && snapshot.val() === 'operator';
+  const userRoleRef = ref(db, `users/${uid}/role`);
+  const snapshot = await get(userRoleRef);
+  return snapshot.exists() && snapshot.val() === "operator";
 };
 
 // Handle login navigation based on role
 const handleLoginNavigation = async (user) => {
-    if (!user) return;
-    const isOperator = await checkOperatorRole(user.uid);
-    if (isOperator) {
-        window.location.href = 'OperatorDashboard.html';
-    } else {
-        window.location.href = 'HomePage.html';
-    }
+  if (!user) return;
+  const isOperator = await checkOperatorRole(user.uid);
+  if (isOperator) {
+    window.location.href = "OperatorDashboard.html";
+  } else {
+    window.location.href = "HomePage.html";
+  }
 };
 
 const registerForm = document.getElementById("registerForm");
@@ -81,7 +81,7 @@ if (registerForm) {
     e.preventDefault();
 
     const fullName = registerForm.fullName.value.trim();
-    const role = registerForm.role ? registerForm.role.value : "rider"; 
+    const role = registerForm.role ? registerForm.role.value : "rider";
     const email = registerForm.email.value.trim();
     const paymentInfo = registerForm.paymentInfo.value.trim();
     const address = registerForm.address.value.trim();
@@ -162,13 +162,13 @@ if (loginForm) {
   const POST_LOGIN_REDIRECT = "index.html";
 
   //   auto-redirect if already logged in
-onAuthStateChanged(auth, (user) => {
-  const page = location.pathname.split('/').pop()?.toLowerCase();
-  const allowList = ['loginpage.html','register.html','forgot.html']; // add your auth pages
-  if (user && !allowList.includes(page)) {
-    location.replace('index.html');
-  }
-});
+  onAuthStateChanged(auth, (user) => {
+    const page = location.pathname.split("/").pop()?.toLowerCase();
+    const allowList = ["loginpage.html", "register.html", "forgot.html"]; // add your auth pages
+    if (user && !allowList.includes(page)) {
+      location.replace("index.html");
+    }
+  });
 
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -190,19 +190,19 @@ onAuthStateChanged(auth, (user) => {
       }, 800);
     } catch (err) {
       console.error(err);
-       const msg =
-  err.code === "auth/invalid-email"
-        ? "Invalid email address."
-        : err.code === "auth/user-disabled"
-        ? "This account is disabled."
-        : err.code === "auth/user-not-found"
-        ? "No account with that email."
-        : err.code === "auth/wrong-password" || err.code === "auth/invalid-credential"
-        ? "Incorrect email or password."
-        : err.message || "Login failed.";
-    loginMsg.className = "hint error";
-    loginMsg.textContent = msg;
-
+      const msg =
+        err.code === "auth/invalid-email"
+          ? "Invalid email address."
+          : err.code === "auth/user-disabled"
+          ? "This account is disabled."
+          : err.code === "auth/user-not-found"
+          ? "No account with that email."
+          : err.code === "auth/wrong-password" ||
+            err.code === "auth/invalid-credential"
+          ? "Incorrect email or password."
+          : err.message || "Login failed.";
+      loginMsg.className = "hint error";
+      loginMsg.textContent = msg;
     }
   });
 
@@ -236,4 +236,17 @@ export async function authFetch(url, options = {}) {
     Authorization: `Bearer ${token}`,
   };
   return fetch(url, { ...options, headers });
+}
+
+export async function getCurrentUsername() {
+  const u = auth.currentUser;
+  if (!u) throw new Error("Not logged in");
+
+  //username look up
+  const snap = await get(ref(db, `users/${u.uid}/username`));
+  if (snap.exists()) {
+    return snap.val(); //the username from signup
+  }
+  //username missing
+  return u.email || u.uid;
 }

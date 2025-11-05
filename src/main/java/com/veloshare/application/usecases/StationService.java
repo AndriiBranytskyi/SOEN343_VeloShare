@@ -55,7 +55,8 @@ public class StationService {
                     standardCount,
                     eBikeCount,
                     station.getAddress(),
-                    bikes
+                    bikes,
+                    station.isOutOfService()
             );
 
             return Result.ok(dto);
@@ -98,7 +99,8 @@ public class StationService {
                     standardCount,
                     eBikeCount,
                     s.getAddress(),
-                    bikes
+                    bikes,
+                    s.isOutOfService()
             ));
         }
         return out;
