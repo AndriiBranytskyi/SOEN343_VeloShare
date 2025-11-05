@@ -834,10 +834,10 @@
           a.textContent = s.address ?? "—";
 
           const cap = Number(s.capacity ?? 0);
-          const bikes = Array.isArray(s.bikes) ? s.bikes : [];
+          const bikeList = Array.isArray(s.bikes) ? s.bikes : [];
           const present = Number.isFinite(s.bikesAvailable)
             ? Number(s.bikesAvailable)
-            : bikes.length;
+            : bikeList.length;
           const free = Number.isFinite(s.freeDocks)
             ? Number(s.freeDocks)
             : Math.max(cap - present, 0);
@@ -862,16 +862,12 @@
           const std =
             (typeof s.standardBikes === "number"
               ? s.standardBikes
-              : (s.bikes || []).filter(
-                  (b) => String(b.type).toLowerCase() === "standard"
-                ).length) || 0;
+              : bikeList.filter((b) => String(b.type).toLowerCase() === "standard").length) || 0;
 
           const eb =
             (typeof s.eBikes === "number"
               ? s.eBikes
-              : (s.bikes || []).filter(
-                  (b) => String(b.type).toLowerCase() === "e-bike"
-                ).length) || 0;
+              : bikeList.filter((b) => String(b.type).toLowerCase() === "e-bike").length) || 0;
 
           grid.innerHTML = `
           <div class="det-subtitle">Bikes</div>
@@ -886,7 +882,86 @@
             </div>
           </div>
           `;
-          empty.style.display = "none";
+
+          // --- new dock grid rendering ---
+          const docksData = Array.isArray(s.docks) ? s.docks : [];
+
+          // simple esc to avoid injecting raw HTML for bike ids
+          const esc = (str) =>
+            String(str ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+
+          // bike for dock: prefer explicit docksData, then try bikes carrying dock info,
+          // otherwise, use positional assignment when docksData is absent (use first 'present' slots)
+          function bikeForDock(pos) {
+            if (docksData.length) {
+              const d = docksData.find(
+                (dd) => Number(dd.position) === pos || Number(dd.dockId) === pos
+              );
+              if (d && d.bike) return d.bike;
+            }
+
+            // match bikes that include dock index fields
+            const byField = bikeList.find(
+              (b) =>
+                Number(b.dock) === pos ||
+                Number(b.dockId) === pos ||
+                Number(b.position) === pos
+            );
+            if (byField) return byField;
+
+            // fallback: when no docks array provided, mark first `present` positions occupied
+            if (!docksData.length && present > 0) {
+              // if we have a bikeList, use it in order; otherwise return a minimal stub for occupancy
+              if (bikeList[pos]) return bikeList[pos];
+              if (pos < present) return { id: `bike-${pos}`, type: "standard" };
+            }
+
+            return null;
+          }
+
+          // always show docks grid (you requested that)
+          if (!cap || cap <= 0) {
+            empty.style.display = "block";
+            grid.style.display = "none";
+          } else {
+            empty.style.display = "none";
+            grid.style.display = "block";
+
+            let html = `<div class="dock-grid">
+              <div class="rowg head">
+                <div class="cell">Dock</div>
+                <div class="cell">Status</div>
+                <div class="cell">Bike</div>
+                <div class="cell">Type</div>
+              </div>`;
+
+            for (let i = 0; i < cap; i++) {
+              const bike = bikeForDock(i);
+              const occupied = !!bike;
+              const bikeId = bike?.id || bike?.bikeId || bike?.name || (occupied ? "bike" : "—");
+              const btype = bike?.type ? String(bike.type).toLowerCase() : "";
+              const isEb = btype.includes("e") || btype.includes("ebike") || btype.includes("e-bike");
+              const statusBadge = occupied
+                ? `<span class="badge ${isEb ? "badge-ebike" : "badge-standard"}">Occupied</span>`
+                : `<span class="badge badge-empty">Free</span>`;
+              const typeCell = occupied ? (isEb ? "E" : "S") : "—";
+
+              html += `<div class="rowg">
+                <div class="cell">${i}</div>
+                <div class="cell">${statusBadge}</div>
+                <div class="cell">${occupied ? esc(String(bikeId)) : "—"}</div>
+                <div class="cell" style="text-align:center">${typeCell}</div>
+              </div>`;
+            }
+
+            html += `</div>`;
+            // replace grid contents (do not append)
+            grid.innerHTML += html;
+            // if you prefer to replace rather than append, use:
+            // grid.innerHTML = html; 
+          }
+
+          empty.style.display = cap ? "none" : "block";
         },
       };
 

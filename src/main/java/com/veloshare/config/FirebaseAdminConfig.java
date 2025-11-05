@@ -6,7 +6,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration
+/*@Configuration
 public class FirebaseAdminConfig {
 
     public FirebaseAdminConfig() {
@@ -26,6 +26,28 @@ public class FirebaseAdminConfig {
                     FirebaseApp.initializeApp(options);
                     System.out.println("Firebase Admin initialized");
                 }
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to initialize Firebase Admin", e);
+            }
+        }
+    }
+}
+*/
+
+public class FirebaseAdminConfig {
+
+    public FirebaseAdminConfig() {
+        if (FirebaseApp.getApps().isEmpty()) {
+            try {
+            	FileInputStream serviceAccount = new FileInputStream(
+                        "src/main/java/com/veloshare/config/firebaseAdminConfigCredentials.json"
+                    );
+
+                    FirebaseOptions options = FirebaseOptions.builder()
+                            .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                            .build();
+                FirebaseApp.initializeApp(options);
+                System.out.println("Firebase Admin initialized");
             } catch (Exception e) {
                 throw new RuntimeException("Failed to initialize Firebase Admin", e);
             }
