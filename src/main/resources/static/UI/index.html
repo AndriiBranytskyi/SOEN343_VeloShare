@@ -919,7 +919,7 @@
             return null;
           }
 
-          // always show docks grid (you requested that)
+          // always show docks grid
           if (!cap || cap <= 0) {
             empty.style.display = "block";
             grid.style.display = "none";
@@ -955,10 +955,8 @@
             }
 
             html += `</div>`;
-            // replace grid contents (do not append)
             grid.innerHTML += html;
-            // if you prefer to replace rather than append, use:
-            // grid.innerHTML = html; 
+
           }
 
           empty.style.display = cap ? "none" : "block";

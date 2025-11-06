@@ -33,7 +33,7 @@ public class FirebaseAdminConfig {
     }
 }
 */
-
+@Configuration
 public class FirebaseAdminConfig {
 
     public FirebaseAdminConfig() {

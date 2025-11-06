@@ -11,3 +11,4 @@ out/
 target/
 bin/
 *.class
+src/main/java/com/veloshare/config/firebaseAdminConfigCredentials.json
