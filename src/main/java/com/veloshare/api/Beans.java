@@ -4,6 +4,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.google.api.Billing;
 import com.veloshare.application.usecases.OperatorService;
 import com.veloshare.application.usecases.ReservationService;
 import com.veloshare.application.usecases.StationService;
@@ -11,6 +12,7 @@ import com.veloshare.application.usecases.TripService;
 import com.veloshare.auth.RolesRepo;
 import com.veloshare.domain.Role;
 import com.veloshare.domain.bmsService;
+import com.veloshare.application.usecases.BillingService;
 
 //bean is an object managed by Spring that helps provide domain to Spring framework
 @Configuration
@@ -37,8 +39,8 @@ public class Beans {
     }
 
     @Bean
-    public TripService tripService(bmsService bms) {
-        return new TripService(bms);
+    public TripService tripService(bmsService bms, BillingService billing) {
+        return new TripService(bms,billing);
     }
 
     @Bean
@@ -78,6 +80,10 @@ public class Beans {
                 System.out.println("Snapshot failed: " + e.getMessage());
             }
         };
+    }
+    @Bean
+    public BillingService billingService(){
+        return new BillingService();
     }
 
 }

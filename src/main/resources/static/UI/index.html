@@ -1,217 +1,1063 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <title>VeloShare Dashboard</title>
-    <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>VeloShare — Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
-        --bg: #0f172a;
-        --card: #1e293b;
-        --text: #f1f5f9;
-        --muted: #94a3b8;
-        --accent: #3b82f6;
-        --border: #334155;
+        /* Palette */
+        --bg: #f6f8fb;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --blue: #0ea5e9;
+        --border: rgba(15, 23, 42, 0.12);
+        --panel: #fff;
+
+        /* Layout + effects */
+        --radius: 10px;
+        --gap: 12px;
+        --shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+
+        /* Status tints */
+        --t-green: rgba(34, 197, 94, 0.12);
+        --t-amber: rgba(249, 115, 22, 0.12);
+        --t-red: rgba(239, 68, 68, 0.12);
       }
-      * {
-        box-sizing: border-box;
-      }
+
+      html,
       body {
+        height: 100%;
         margin: 0;
-        padding: 24px;
         background: var(--bg);
-        color: var(--text);
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial,
+        color: var(--ink);
+        font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial,
           sans-serif;
-        display: flex;
-        justify-content: center;
       }
-      .wrap {
-        width: 100%;
-        max-width: 1024px;
-      }
-      .topbar {
+
+      /* TOP NAV BAR */
+      .navbar {
+        background: #fff;
+        border-bottom: 1px solid var(--border);
+        box-shadow: var(--shadow);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 16px;
+        padding: 10px 18px;
       }
-      .topbar h1 {
-        font-size: 22px;
-        margin: 0;
+
+      .brand {
+        font-weight: 800;
+        font-size: 18px;
+        color: var(--ink);
+        text-decoration: none;
+        letter-spacing: -0.01em;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 8px;
+      }
+
+      /* Buttons for top nav */
+      .btn {
+        font-family: "Inter", sans-serif;
+        font-size: 13px;
         font-weight: 600;
+        border-radius: 999px;
+        padding: 6px 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s, opacity 0.15s;
       }
-      #userBadge {
-        font-size: 14px;
+
+      /* Color variables for brand theme */
+      :root {
+        --primary: #0ea5e9;
+        --primary-ink: #fff;
+        --surface: #fff;
+      }
+
+      /* Button types */
+      .btn.primary {
+        background: var(--primary);
+        color: var(--primary-ink);
+        border: 1px solid var(--primary);
+        text-decoration: none;
+      }
+      .btn.primary:hover {
+        opacity: 0.9;
+      }
+
+      .btn.ghost {
+        background: black;
+        color: white;
+        text-decoration: none;
+      }
+      .btn.ghost:hover {
+        background: rgba(255, 255, 255, 0.799);
+        color: black;
+        border: 1px solid black;
+      }
+
+      /* LAYOUT */
+      .page {
+        height: 100vh;
+        display: grid;
+        grid-template-columns: minmax(340px, 500px) 1fr;
+        gap: var(--gap);
+        padding: var(--gap);
+      }
+      @media (max-width: 960px) {
+        .page {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 360px;
+        }
+      }
+
+      /* LEFT PANEL */
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        display: grid;
+        grid-template-rows: auto 1fr;
+        overflow: hidden;
+      }
+
+      .hero {
+        background: #6ba8f7; /* keep brand blue */
+        color: #fff;
+        padding: 12px 14px;
+      }
+      .hero h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+      }
+
+      .dash {
+        padding: 12px;
+        overflow: auto;
+      }
+
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 800;
+      }
+      .muted {
+        margin: 2px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .user-pill {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        padding: 4px 10px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-size: 12.5px;
+        background: #fff;
+      }
+      .role-pill {
+        background: #111214;
+        color: #fff;
+        border-radius: 999px;
+        padding: 1px 8px 2px;
+        font-size: 11px;
+        text-transform: capitalize;
+      }
+
+      /* Tabs (segmented) */
+      .tabs {
+        display: inline-flex;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .tab-btn {
+        border: 0;
+        background: transparent;
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .tab-btn.active {
+        background: rgba(14, 165, 233, 0.12);
+        color: var(--ink);
+      }
+
+      .panel {
+        display: none;
+      }
+      .panel.active {
+        display: block;
+      }
+
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        /* margin-top: 10px; */
+        flex: 1;
+        min-width: 160px;
+      }
+      .label {
+        font-size: 12.5px;
         color: var(--muted);
       }
-      .cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 16px;
-      }
-      .card {
+      .input {
+        height: 38px;
+        background: #fff;
         border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 16px;
-        background: var(--card);
+        border-radius: 8px;
+        padding: 10px 10px;
+        font: 400 14px "Inter", sans-serif;
+        transition: border 0.15s, box-shadow 0.15s;
       }
-      .card h2 {
-        margin: 0 0 12px 0;
-        font-size: 18px;
-        font-weight: 600;
+      .input:focus {
+        outline: 0;
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.18);
       }
-      .row {
+
+      .button {
+        height: 38px;
+        border: 1px solid #0f172a;
+        border-radius: 8px;
+        background: #0f172a;
+        color: #fff;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: opacity 0.12s ease;
+      }
+      .button:hover {
+        opacity: 0.9;
+      }
+
+      .legend {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
-      }
-      .row input,
-      .row select {
-        flex: 1 1 160px;
-        min-width: 150px;
-        max-width: 100%;
-        padding: 8px;
-        border-radius: 8px;
-        border: 1px solid var(--border);
-        background: var(--card);
-        color: var(--text);
-      }
-      button {
-        padding: 10px 14px;
-        border-radius: 8px;
-        border: 1px solid var(--border);
-        background: var(--accent);
-        color: #fff;
-        cursor: pointer;
-        flex: 0 0 auto;
-      }
-      button:hover {
-        filter: brightness(1.1);
-      }
-      #out {
-        white-space: pre-wrap;
-        background: var(--bg);
+        font-size: 12px;
         color: var(--muted);
-        padding: 12px;
+        margin: 6px 0 0;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        display: inline-block;
+      }
+      .dot.green {
+        background: #22c55e;
+      }
+      .dot.yellow {
+        background: #f59e0b;
+      }
+      .dot.red {
+        background: #ef4444;
+      }
+      .station-info {
+        margin-top: 10px;
+        border: 1px solid var(--border);
         border-radius: 8px;
+        padding: 8px 10px;
+        background: #f8fafc;
+        font-size: 13px;
+      }
+      .station-info-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+      }
+      .station-info-name {
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .station-info-address {
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 6px;
+      }
+      .station-info-grid {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 4px;
+      }
+      .station-info-kpi .kpi-label {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .station-info-kpi .kpi-value {
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .station-info-sub {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .station-info-pill {
+        font-size: 11px;
+        border-radius: 999px;
+        padding: 2px 8px;
         border: 1px solid var(--border);
       }
-      /* Hide operator card by default; JS will enable if role=OPERATOR */
-      #card-ops {
-        display: none;
+      .station-debug summary {
+        cursor: pointer;
+        font-size: 12px;
       }
-      #card-ops-admin {
-        display: none;
+
+      #outConsole {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        min-height: 64px;
+        max-height: 110px;
+        overflow: auto;
+        font-size: 12.5px;
+        white-space: pre-wrap;
+        padding: 6px 8px;
       }
-      .rider-card {
-        display: none;
+
+      /* RIGHT MAP */
+      .map-shell {
+        position: relative;
+        background: #e6f1ff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+      #map {
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Details drawer (simpler) */
+      .details {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        bottom: 10px;
+        width: min(380px, 92vw);
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+        transform: translateX(110%);
+        transition: transform 0.2s ease;
+        overflow: auto;
+        z-index: 2;
+      }
+      .details[aria-hidden="false"] {
+        transform: translateX(0);
+      }
+      .details-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px;
+        border-bottom: 1px solid var(--border);
+      }
+      .details-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 800;
+      }
+      .det-muted {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 12.5px;
+      }
+      .det-close {
+        border: 0;
+        background: transparent;
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
+        opacity: 0.7;
+      }
+      .details-body {
+        padding: 10px;
+      }
+      .det-stats {
+        display: flex;
+        gap: 14px;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #f8fafc;
+      }
+      .det-kpi {
+        font-size: 18px;
+        font-weight: 800;
+      }
+      .det-subtitle {
+        margin: 12px 0 6px;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .dock-grid {
+        display: grid;
+        gap: 0;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .dock-grid .rowg {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr 0.6fr 0.6fr;
+      }
+      .dock-grid .cell {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border);
+        background: #fff;
+        font-size: 13px;
+      }
+      .dock-grid .head .cell {
+        background: #f2f6ff;
+        font-weight: 700;
+      }
+      .badge {
+        font-size: 12px;
+        border-radius: 999px;
+        padding: 3px 8px;
+        display: inline-block;
+        border: 1px solid var(--border);
+      }
+      .badge-ebike {
+        background: rgba(14, 165, 233, 0.12);
+      }
+      .badge-standard {
+        background: rgba(34, 197, 94, 0.12);
+      }
+      .badge-empty {
+        background: rgba(15, 23, 42, 0.04);
+      }
+      .status-badge {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 2px 8px;
+        font-size: 11.5px;
+      }
+      .status-red {
+        background: var(--t-red);
+      }
+      .status-yellow {
+        background: var(--t-amber);
+      }
+      .status-green {
+        background: var(--t-green);
+      }
+
+      .page {
+        height: calc(100vh - 56px);
+        display: grid;
+        grid-template-columns: minmax(340px, 500px) 1fr;
+        gap: var(--gap);
+        padding: var(--gap);
       }
     </style>
   </head>
   <body>
-    <main class="wrap">
-      <header class="topbar">
-        <h1>VeloShare Dashboard</h1>
-        <div id="userBadge">Not signed in</div>
-      </header>
+    <!-- TOP NAVIGATION BAR -->
+    <nav class="navbar">
+      <a href="HomePage.html" class="brand">Veloshare</a>
+      <div class="nav-links">
+        <a href="pricing.html" class="btn ghost">Pricing</a>
+        <a href="billing.html" class="btn ghost">Billing</a>
+        <a href="history.html" class="btn ghost">Ride History</a>
+        <button id="btnLogout" class="btn primary">Sign out</button>
+      </div>
+    </nav>
 
-      <h2
-        id="dashboardType"
-        style="text-align: center; margin-bottom: 16px"
-      ></h2>
-      <section class="cards">
-        <div class="card">
-          <h2>Station status</h2>
-          <div class="row">
-            <input id="stationName" value="Station A" />
-            <button id="btnLoadStation">Load</button>
+    <div class="page">
+      <!-- LEFT -->
+      <section class="card">
+        <div class="dash">
+          <div class="header-row">
+            <div>
+              <h2 class="title">Dashboard</h2>
+              <p class="muted" id="dashSubtitle">Loading profile…</p>
+            </div>
+            <div class="user-pill" id="userPill" style="display: none">
+              <span id="userName">@user</span>
+              <span id="userRole" class="role-pill">rider</span>
+            </div>
           </div>
-          <pre id="station" style="margin-top: 10px"></pre>
-        </div>
 
-        <div class="card rider-card">
-          <h2>Reserve bike</h2>
-          <div class="row">
-            <input id="userId" placeholder="(optional) userId" />
-            <input id="bikeId" value="bike1" />
-            <input id="reserveStation" value="Station A" />
-            <input id="minutes" type="number" value="10" />
-            <button id="btnReserve">Reserve</button>
+          <div class="tabs" id="tabs">
+            <button class="tab-btn active" data-tab="dash">Dashboard</button>
           </div>
-        </div>
 
-        <div class="card rider-card">
-          <h2>Start trip</h2>
-          <div class="row">
-            <input id="startBike" value="bike1" />
-            <input id="startStation" value="Station A" />
-            <button id="btnStartTrip">Start</button>
-          </div>
-        </div>
+          <!-- DASH PANEL -->
+          <div class="panel active" id="panel-dash">
+            <div class="row">
+              <div class="field">
+                <label class="label" for="stationName">Station name</label>
+                <input class="input" id="stationName" value="Station A" />
+              </div>
+              <div class="field" style="max-width: 130px">
+                <label class="label">&nbsp;</label>
+                <button class="button" id="btnLoadStation">Load</button>
+              </div>
+            </div>
 
-        <div class="card rider-card">
-          <h2>End trip</h2>
-          <div class="row">
-            <input id="tripId" value="trip1" />
-            <input id="endStation" value="Station A" />
-            <button id="btnEndTrip">End</button>
-          </div>
-        </div>
+            <div id="stationInfo" class="station-info" style="display: none">
+              <div class="station-info-header">
+                <div>
+                  <div class="station-info-name" id="stInfoName">Station</div>
+                  <div class="station-info-address" id="stInfoAddress">
+                    Address: —
+                  </div>
+                </div>
+                <span class="station-info-pill" id="stInfoStatus">Active</span>
+              </div>
+              <div class="station-info-grid">
+                <div class="station-info-kpi">
+                  <span class="kpi-label">Bikes</span>
+                  <span class="kpi-value" id="stInfoBikes">0</span>
+                </div>
+                <div class="station-info-kpi">
+                  <span class="kpi-label">Capacity</span>
+                  <span class="kpi-value" id="stInfoCapacity">0</span>
+                </div>
+                <div class="station-info-kpi">
+                  <span class="kpi-label">Free docks</span>
+                  <span class="kpi-value" id="stInfoFree">0</span>
+                </div>
+              </div>
+              <div class="station-info-sub">
+                <span id="stInfoStd">Standard: 0</span>
+                &nbsp;•&nbsp;
+                <span id="stInfoEb">E-bikes: 0</span>
+              </div>
+            </div>
 
-        <div class="card rider-card">
-          <h2>Cancel reservation</h2>
-          <div class="row">
-            <input id="resId" placeholder="reservation id" />
-            <button id="btnCancel">Cancel Reservation</button>
-          </div>
-        </div>
+            <details
+              id="stationDebug"
+              class="station-debug"
+              style="margin-top: 6px"
+            >
+              <summary class="label">Debug station JSON</summary>
+              <pre id="station" style="margin-top: 6px"></pre>
+            </details>
 
-        <div class="card" id="card-ops">
-          <h2>Move Bike</h2>
-          <div class="row">
-            <input id="mvBikeId" placeholder="bike id" />
-            <input id="mvFrom" placeholder="from station" />
-            <input id="mvTo" placeholder="to station" />
-            <button id="btnMove">Move</button>
-          </div>
-        </div>
+            <div id="riderBlock" style="display: none">
+              <p class="muted">Rider actions</p>
+              <div class="row">
+                <div class="field">
+                  <label class="label" for="bikeId">Bike ID</label
+                  ><input class="input" id="bikeId" value="bike1" />
+                </div>
+                <div class="field">
+                  <label class="label" for="reserveStation"
+                    >Reserve at station</label
+                  ><input class="input" id="reserveStation" value="Station A" />
+                </div>
+                <div class="field" style="max-width: 130px">
+                  <label class="label">&nbsp;</label
+                  ><button class="button" id="btnReserve">Reserve</button>
+                </div>
+              </div>
+              <div class="row">
+                <div class="field">
+                  <label class="label" for="startBike">Start bike</label
+                  ><input class="input" id="startBike" value="bike1" />
+                </div>
+                <div class="field">
+                  <label class="label" for="startStation">From station</label
+                  ><input class="input" id="startStation" value="Station A" />
+                </div>
+                <div class="field" style="max-width: 130px">
+                  <label class="label">&nbsp;</label
+                  ><button class="button" id="btnStartTrip">Start</button>
+                </div>
+              </div>
+              <div class="row">
+                <div class="field">
+                  <label class="label" for="tripId">Trip ID</label
+                  ><input class="input" id="tripId" value="trip1" />
+                </div>
+                <div class="field">
+                  <label class="label" for="endStation">End at station</label
+                  ><input class="input" id="endStation" value="Station A" />
+                </div>
+                <div class="field" style="max-width: 130px">
+                  <label class="label">&nbsp;</label
+                  ><button class="button" id="btnEndTrip">End</button>
+                  <div id="tripStatus"></div>
+                </div>
+              </div>
+            </div>
 
-        <div class="card" id="card-ops-admin">
-          <h2>Station & Bike Status</h2>
-          <div class="row" style="margin-bottom: 8px">
-            <input id="opStation" placeholder="station name" />
-            <button id="btnStationOOS">Set Station OOS</button>
-            <button id="btnStationActive">Set Station Active</button>
+            <div id="opsBlock" style="display: none">
+              <p class="muted">Operator actions</p>
+              <div class="row">
+                <div class="field">
+                  <label class="label" for="mvBikeId">Bike ID</label
+                  ><input class="input" id="mvBikeId" />
+                </div>
+                <div class="field">
+                  <label class="label" for="mvFrom">From</label
+                  ><input class="input" id="mvFrom" />
+                </div>
+                <div class="field">
+                  <label class="label" for="mvTo">To</label
+                  ><input class="input" id="mvTo" />
+                </div>
+                <div class="field" style="max-width: 130px">
+                  <label class="label">&nbsp;</label
+                  ><button class="button" id="btnMove">Move</button>
+                </div>
+              </div>
+              <div class="row">
+                <div class="field">
+                  <label class="label" for="opStation">Station</label
+                  ><input class="input" id="opStation" />
+                </div>
+                <div class="field" style="max-width: 110px">
+                  <label class="label">&nbsp;</label
+                  ><button class="button" id="btnStationOOS">OOS</button>
+                </div>
+                <div class="field" style="max-width: 110px">
+                  <label class="label">&nbsp;</label
+                  ><button class="button" id="btnStationActive">Active</button>
+                </div>
+              </div>
+              <div class="row">
+                <div class="field">
+                  <label class="label" for="opBike">Bike</label
+                  ><input class="input" id="opBike" />
+                </div>
+                <div class="field" style="max-width: 110px">
+                  <label class="label">&nbsp;</label
+                  ><button class="button" id="btnBikeMaint">Maint</button>
+                </div>
+                <div class="field" style="max-width: 110px">
+                  <label class="label">&nbsp;</label
+                  ><button class="button" id="btnBikeAvail">Avail</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="legend">
+              <span><span class="dot green"></span> balanced</span>
+              <span><span class="dot yellow"></span> low / almost full</span>
+              <span><span class="dot red"></span> empty/full/OOS</span>
+            </div>
+
+            <label class="label" style="margin-top: 6px">System messages</label>
+            <div id="outConsole" aria-live="polite"></div>
           </div>
-          <div class="row">
-            <input id="opBike" placeholder="bike id" />
-            <button id="btnBikeMaint">Set Bike Maintenance</button>
-            <button id="btnBikeAvail">Set Bike Available</button>
+
+          <!-- other tabs -->
+          <div class="panel" id="panel-pricing">
+            <p class="muted">Pricing placeholder.</p>
+          </div>
+          <div class="panel" id="panel-billing">
+            <p class="muted">Billing placeholder.</p>
+          </div>
+          <div class="panel" id="panel-history">
+            <p class="muted">Ride history placeholder.</p>
           </div>
         </div>
       </section>
 
-      <section style="margin-top: 16px">
-        <h3>Output</h3>
-        <div id="out"></div>
-      </section>
-    </main>
+      <!-- RIGHT MAP -->
+      <div class="map-shell" aria-label="Map of bike stations">
+        <div id="map"></div>
 
-    <!-- Load Firebase & auth -->
+        <!-- Station details drawer -->
+        <aside id="detailsDrawer" class="details" aria-hidden="true">
+          <div class="details-header">
+            <div>
+              <h3 id="detName">Station</h3>
+              <p class="det-muted">
+                <span id="detAddress">—</span> •
+                <span id="detStatus" class="status-badge">—</span>
+              </p>
+            </div>
+            <button id="detClose" class="det-close" aria-label="Close">
+              &times;
+            </button>
+          </div>
+          <div class="details-body">
+            <div class="det-stats">
+              <div>
+                <div class="det-kpi" id="detOcc">0 / 0</div>
+                <div class="det-muted">Occupancy</div>
+              </div>
+              <div>
+                <div class="det-kpi" id="detAvail">0</div>
+                <div class="det-muted">Docks available</div>
+              </div>
+            </div>
+
+            <h4 class="det-subtitle">Docks</h4>
+            <div id="dockGrid" class="dock-grid"></div>
+            <p id="dockEmpty" class="det-muted" style="display: none">
+              No dock data.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- GOOGLE MAP -->
+    <script>
+      const VLS_LIGHT = [
+        { elementType: "geometry", stylers: [{ color: "#f8fafc" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#475569" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
+        {
+          featureType: "water",
+          elementType: "geometry",
+          stylers: [{ color: "#c9e6ff" }],
+        },
+        {
+          featureType: "poi",
+          elementType: "labels.icon",
+          stylers: [{ visibility: "off" }],
+        },
+        { featureType: "transit", stylers: [{ visibility: "off" }] },
+        {
+          featureType: "road",
+          elementType: "geometry",
+          stylers: [{ color: "#ffffff" }],
+        },
+        {
+          featureType: "road",
+          elementType: "labels.text.fill",
+          stylers: [{ color: "#334155" }],
+        },
+        {
+          featureType: "road.highway",
+          elementType: "geometry",
+          stylers: [{ color: "#fef3c7" }],
+        },
+        {
+          featureType: "administrative",
+          elementType: "geometry",
+          stylers: [{ visibility: "off" }],
+        },
+      ];
+
+      const markerSvgEncoded = (fill = "#3B82F6") => {
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42" fill="none">
+        <path d="M16 41s12-11.2 12-23A12 12 0 0 0 4 18c0 11.8 12 23 12 23z" fill="${fill}"/>
+        <circle cx="16" cy="18" r="5.5" fill="white"/></svg>`;
+        return (
+          "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg.trim())
+        );
+      };
+      const markerIcon = (fill) => ({
+        url: markerSvgEncoded(fill),
+        scaledSize: new google.maps.Size(32, 42),
+      });
+
+      const colorForStation = (s) => {
+        if (s.outOfService) return "#ef4444"; //keep it always red if OOS for rider+operator view
+
+        const cap = Number(s.capacity) || 0;
+        const bikes = Array.isArray(s.bikes)
+          ? s.bikes.length
+          : Number(s.bikesAvailable ?? 0);
+        if (!cap || bikes === 0 || bikes === cap) return "#ef4444";
+        const pct = (bikes / cap) * 100;
+        if (pct <= 25 || pct >= 75) return "#f59e0b"; //changed capacity to handle when low+almost full
+        return "#22c55e";
+      };
+
+      const pickPos = (s) => {
+        const lat = Number(s.latitude ?? s.lat),
+          lng = Number(s.longitude ?? s.lon ?? s.lng);
+        return Number.isFinite(lat) && Number.isFinite(lng)
+          ? { lat, lng }
+          : null;
+      };
+
+      const drawer = {
+        el: () => document.getElementById("detailsDrawer"),
+        open(s) {
+          const el = this.el();
+          if (!el) return;
+          el.setAttribute("aria-hidden", "false");
+          this.render(s);
+        },
+        close() {
+          this.el()?.setAttribute("aria-hidden", "true");
+        },
+        render(s) {
+          const n = document.getElementById("detName"),
+            a = document.getElementById("detAddress"),
+            occ = document.getElementById("detOcc"),
+            av = document.getElementById("detAvail"),
+            grid = document.getElementById("dockGrid"),
+            empty = document.getElementById("dockEmpty"),
+            status = document.getElementById("detStatus");
+
+          n.textContent = s.name ?? "Station";
+          a.textContent = s.address ?? "—";
+
+          const cap = Number(s.capacity ?? 0);
+          const bikeList = Array.isArray(s.bikes) ? s.bikes : [];
+          const present = Number.isFinite(s.bikesAvailable)
+            ? Number(s.bikesAvailable)
+            : bikeList.length;
+          const free = Number.isFinite(s.freeDocks)
+            ? Number(s.freeDocks)
+            : Math.max(cap - present, 0);
+
+          occ.textContent = `${present} / ${cap}`;
+          av.textContent = `${free}`;
+
+          const isOos = !!s.outOfService;
+
+          status.className =
+            "status-badge " +
+            (isOos
+              ? "status-red"
+              : !cap || present === 0 || present === cap
+              ? "status-red"
+              : present / cap >= 0.75
+              ? "status-yellow"
+              : "status-green");
+
+          status.textContent = isOos ? "OOS" : "Active";
+
+          const std =
+            (typeof s.standardBikes === "number"
+              ? s.standardBikes
+              : bikeList.filter((b) => String(b.type).toLowerCase() === "standard").length) || 0;
+
+          const eb =
+            (typeof s.eBikes === "number"
+              ? s.eBikes
+              : bikeList.filter((b) => String(b.type).toLowerCase() === "e-bike").length) || 0;
+
+          grid.innerHTML = `
+          <div class="det-subtitle">Bikes</div>
+            <div class="det-stats" style="margin-top:6px;">
+            <div>
+            <div class="det-kpi">${std}</div>
+            <div class="det-muted">Standard</div>
+            </div>
+            <div>
+            <div class="det-kpi">${eb}</div>
+            <div class="det-muted">E-bike</div>
+            </div>
+          </div>
+          `;
+
+          // --- new dock grid rendering ---
+          const docksData = Array.isArray(s.docks) ? s.docks : [];
+
+          // simple esc to avoid injecting raw HTML for bike ids
+          const esc = (str) =>
+            String(str ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+
+          // bike for dock: prefer explicit docksData, then try bikes carrying dock info,
+          // otherwise, use positional assignment when docksData is absent (use first 'present' slots)
+          function bikeForDock(pos) {
+            if (docksData.length) {
+              const d = docksData.find(
+                (dd) => Number(dd.position) === pos || Number(dd.dockId) === pos
+              );
+              if (d && d.bike) return d.bike;
+            }
+
+            // match bikes that include dock index fields
+            const byField = bikeList.find(
+              (b) =>
+                Number(b.dock) === pos ||
+                Number(b.dockId) === pos ||
+                Number(b.position) === pos
+            );
+            if (byField) return byField;
+
+            // fallback: when no docks array provided, mark first `present` positions occupied
+            if (!docksData.length && present > 0) {
+              // if we have a bikeList, use it in order; otherwise return a minimal stub for occupancy
+              if (bikeList[pos]) return bikeList[pos];
+              if (pos < present) return { id: `bike-${pos}`, type: "standard" };
+            }
+
+            return null;
+          }
+
+          // always show docks grid (you requested that)
+          if (!cap || cap <= 0) {
+            empty.style.display = "block";
+            grid.style.display = "none";
+          } else {
+            empty.style.display = "none";
+            grid.style.display = "block";
+
+            let html = `<div class="dock-grid">
+              <div class="rowg head">
+                <div class="cell">Dock</div>
+                <div class="cell">Status</div>
+                <div class="cell">Bike</div>
+                <div class="cell">Type</div>
+              </div>`;
+
+            for (let i = 0; i < cap; i++) {
+              const bike = bikeForDock(i);
+              const occupied = !!bike;
+              const bikeId = bike?.id || bike?.bikeId || bike?.name || (occupied ? "bike" : "—");
+              const btype = bike?.type ? String(bike.type).toLowerCase() : "";
+              const isEb = btype.includes("e") || btype.includes("ebike") || btype.includes("e-bike");
+              const statusBadge = occupied
+                ? `<span class="badge ${isEb ? "badge-ebike" : "badge-standard"}">Occupied</span>`
+                : `<span class="badge badge-empty">Free</span>`;
+              const typeCell = occupied ? (isEb ? "E" : "S") : "—";
+
+              html += `<div class="rowg">
+                <div class="cell">${i}</div>
+                <div class="cell">${statusBadge}</div>
+                <div class="cell">${occupied ? esc(String(bikeId)) : "—"}</div>
+                <div class="cell" style="text-align:center">${typeCell}</div>
+              </div>`;
+            }
+
+            html += `</div>`;
+            // replace grid contents (do not append)
+            grid.innerHTML += html;
+            // if you prefer to replace rather than append, use:
+            // grid.innerHTML = html; 
+          }
+
+          empty.style.display = cap ? "none" : "block";
+        },
+      };
+
+      document.addEventListener("click", (e) => {
+        if (e.target?.id === "detClose") drawer.close();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") drawer.close();
+      });
+
+      let map;
+      const markers = {}; // name -> google.maps.Marker
+      // Global station cache for status updates
+      window.stationCache = window.stationCache || new Map();
+      const stationCache = window.stationCache;
+      const setMarkerColor = (stationName, color) => {
+        const marker = markers[stationName];
+        if (marker) marker.setIcon(markerIcon(color));
+      };
+
+      async function initMap() {
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 45.51, lng: -73.58 },
+          zoom: 12,
+          styles: VLS_LIGHT,
+          streetViewControl: false,
+          fullscreenControl: false,
+          mapTypeControl: false,
+        });
+        try {
+          const res = await fetch("/api/stations", { cache: "no-store" });
+          if (!res.ok) throw new Error(`GET /api/stations -> ${res.status}`);
+          const stations = await res.json();
+          const bounds = new google.maps.LatLngBounds();
+          stations.forEach((s) => {
+            const pos = pickPos(s);
+            if (!pos) return;
+            const m = new google.maps.Marker({
+              map,
+              position: pos,
+              title: s.name,
+              icon: markerIcon(colorForStation(s)),
+            });
+            markers[s.name] = m; // <— keep a reference
+            // Add to global station cache
+            stationCache.set(s.name, s);
+
+            m.addListener("click", async () => {
+              [
+                "stationName",
+                "reserveStation",
+                "startStation",
+                "endStation",
+                "mvFrom",
+                "opStation",
+              ].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.value = s.name;
+              });
+              try {
+                const det = await fetch(
+                  `/api/stations/${encodeURIComponent(s.name)}`,
+                  { cache: "no-store" }
+                );
+                drawer.open(det.ok ? await det.json() : s);
+              } catch {
+                drawer.open(s);
+              }
+            });
+            bounds.extend(pos);
+          });
+
+          if (!bounds.isEmpty()) map.fitBounds(bounds);
+        } catch (e) {
+          console.warn("could not load stations", e);
+        }
+      }
+      window.initMap = initMap;
+    </script>
+
+    <script
+      async
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDBKGrjRztQ1CRAdSWw9nOFnttSCrI9Q4A&callback=initMap"
+    ></script>
+
+    <!-- firebase + app logic -->
     <script type="module" src="./firebase.js"></script>
     <script type="module" src="./auth.js"></script>
-
-    <!-- Wire the dashboard actions -->
     <script type="module">
       import { auth } from "./firebase.js";
-      import { authFetch } from "./auth.js";
+      import { getCurrentUsername } from "./auth.js";
       import {
         loadStation,
         reserve,
         startTrip,
         endTrip,
-        cancelReservation,
         moveBike,
         getProfile,
         setStationOOS,
@@ -220,176 +1066,438 @@
         setBikeAvailable,
       } from "./dashboard.js";
 
-      const $ = (sel) => document.querySelector(sel);
-      const out = (m) => ($("#out").textContent += m + "\n");
+      const $ = (s) => document.querySelector(s);
+      const log = (m) => {
+        const box = $("#outConsole");
+        box.textContent =
+          `[${new Date().toLocaleTimeString()}] ${m}\n` + box.textContent;
+      };
 
-      function showOpsCards(show) {
-        const ids = ["card-ops", "card-ops-admin"];
-        ids.forEach((id) => {
-          const el = document.getElementById(id);
-          if (el) el.style.display = show ? "block" : "none";
-        });
-      } // operator-only cards are hidden/displayed depending on user
+      window.onerror = (msg, src, line, col) => {
+        log(`JS error at ${src}:${line}:${col} – ${msg}`);
+      };
 
-      function showRiderCards(show) {
-        const riderCards = document.querySelectorAll(".rider-card");
-        riderCards.forEach((el) => {
-          el.style.display = show ? "block" : "none";
-        });
+      //timer for current trip
+      let currentTripId = null;
+      let currentTripStart = null;
+      let currentTripStartStation = null;
+      let tripTimerHandle = null;
+
+      function updateTripStatus() {
+        const el = document.getElementById("tripStatus");
+        if (!currentTripId || !currentTripStart) {
+          el.textContent = "";
+          return;
+        }
+        const now = Date.now();
+        const elapsedMs = now - currentTripStart;
+        const elapsedMin = Math.floor(elapsedMs / 60000);
+        const elapsedSec = Math.floor((elapsedMs % 60000) / 1000);
+        el.textContent =
+          `Trip ${currentTripId} in progress – ` +
+          `${elapsedMin} min ${elapsedSec.toString().padStart(2, "0")} sec`;
       }
 
+      // Tabs
+      $("#tabs").addEventListener("click", (e) => {
+        const b = e.target.closest(".tab-btn");
+        if (!b) return;
+        const tab = b.dataset.tab;
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((x) => x.classList.toggle("active", x === b));
+        document
+          .querySelectorAll(".panel")
+          .forEach((p) =>
+            p.classList.toggle("active", p.id === "panel-" + tab)
+          );
+      });
+
+      const showRider = (show) => {
+        $("#riderBlock").style.display = show ? "block" : "none";
+      };
+      const showOps = (show) => {
+        $("#opsBlock").style.display = show ? "block" : "none";
+      };
+
       auth.onAuthStateChanged(async (u) => {
-        const dashTitle = document.getElementById("dashboardType");
-
         if (u) {
-          $("#userBadge").textContent = `UID: ${u.uid}`;
-          const me = await getProfile();
-          const isOperator = me?.role === "OPERATOR";
+          $("#userPill").style.display = "flex";
+          let displayName;
+          try {
+            displayName = await getCurrentUsername();
+          } catch {
+            displayName = u.email || u.uid;
+          }
+          $("#userName").textContent = displayName;
 
-          showOpsCards(isOperator);
-          showRiderCards(!isOperator);
-
-          dashTitle.textContent = isOperator
-            ? "Operator Dashboard"
-            : "Rider Dashboard";
+          try {
+            const me = await getProfile();
+            const role = (me.role || "rider").toLowerCase();
+            $("#userRole").textContent = role;
+            $("#dashSubtitle").textContent =
+              role === "operator"
+                ? "Operator tools enabled."
+                : "Rider tools enabled.";
+            showRider(role !== "operator");
+            showOps(role === "operator");
+          } catch {
+            $("#dashSubtitle").textContent =
+              "Profile missing, default to rider.";
+            showRider(true);
+            showOps(false);
+          }
         } else {
-          $("#userBadge").textContent = "Not signed in";
-          showOpsCards(false);
-          showRiderCards(false);
-          dashTitle.textContent = "";
+          $("#userPill").style.display = "none";
+          $("#dashSubtitle").textContent = "Sign in to unlock actions.";
+          showRider(false);
+          showOps(false);
         }
       });
+
+      // Buttons
 
       $("#btnLoadStation").onclick = async () => {
         try {
           const name = $("#stationName").value.trim();
           const data = await loadStation(name);
-          out(`GET /api/stations/${encodeURIComponent(name)} -> OK`);
-          $("#station").textContent = JSON.stringify(data, null, 2);
+
+          log(`GET /api/stations/${encodeURIComponent(name)} -> OK`);
+
+          // Fill the nicer info card
+          const info = document.getElementById("stationInfo");
+          if (info && data) {
+            info.style.display = "block";
+
+            const cap = Number(data.capacity ?? 0);
+            const bikesArr = Array.isArray(data.bikes) ? data.bikes : [];
+            const present = Number.isFinite(data.bikesAvailable)
+              ? Number(data.bikesAvailable)
+              : bikesArr.length;
+            const free = Number.isFinite(data.freeDocks)
+              ? Number(data.freeDocks)
+              : Math.max(cap - present, 0);
+
+            const std =
+              typeof data.standardBikes === "number"
+                ? data.standardBikes
+                : bikesArr.filter(
+                    (b) => String(b.type).toLowerCase() === "standard"
+                  ).length;
+
+            const eb =
+              typeof data.eBikes === "number"
+                ? data.eBikes
+                : bikesArr.filter(
+                    (b) => String(b.type).toLowerCase() === "e-bike"
+                  ).length;
+
+            document.getElementById("stInfoName").textContent =
+              data.name || name || "Station";
+            document.getElementById("stInfoAddress").textContent =
+              "Address: " + (data.address || "N/A");
+            document.getElementById("stInfoBikes").textContent = present;
+            document.getElementById("stInfoCapacity").textContent = cap;
+            document.getElementById("stInfoFree").textContent = free;
+            document.getElementById(
+              "stInfoStd"
+            ).textContent = `Standard: ${std}`;
+            document.getElementById("stInfoEb").textContent = `E-bikes: ${eb}`;
+
+            // Simple status pill text (Active/OOS) based on outOfService flag
+            const pill = document.getElementById("stInfoStatus");
+            if (pill) {
+              if (data.outOfService) {
+                pill.textContent = "OOS";
+              } else {
+                pill.textContent = "Active";
+              }
+            }
+          }
+
+          // Keep raw JSON for debugging (collapsed)
+          const debugPre = document.getElementById("station");
+          if (debugPre) {
+            debugPre.textContent = JSON.stringify(data, null, 2);
+          }
         } catch (e) {
-          out("Load failed: " + e.message);
+          log("Load failed: " + e.message);
         }
       };
-
       $("#btnReserve").onclick = async () => {
         try {
-          const bodyUserId = $("#userId").value.trim();
           const uid = auth.currentUser?.uid ?? "";
           await reserve(
-            bodyUserId || uid,
+            uid,
             $("#bikeId").value.trim(),
             $("#reserveStation").value.trim(),
-            Number($("#minutes").value)
+            10
           );
-          out("POST /api/reservations -> OK");
+          log("Reservation OK");
         } catch (e) {
-          out("Reserve failed: " + e.message);
+          log("Reserve failed: " + e.message);
         }
       };
-
       $("#btnStartTrip").onclick = async (ev) => {
         const btn = ev.currentTarget;
         btn.disabled = true;
 
+        const bikeId = $("#startBike").value.trim();
+        const stationName = $("#startStation").value.trim();
+
         const clickTag = Math.random().toString(36).slice(2);
         console.log("[UI] Start clicked tag=", clickTag, "payload=", {
-          bikeId: $("#startBike").value.trim(),
-          stationName: $("#startStation").value.trim(),
+          bikeId,
+          stationName,
         });
-
         try {
-          const tripId = await startTrip({
-            bikeId: $("#startBike").value.trim(),
-            stationName: $("#startStation").value.trim(),
-          });
+          const tripId = await startTrip({ bikeId, stationName });
           $("#tripId").value = tripId;
-          out(`POST /api/trips/start -> OK (tripId=${tripId}) [${clickTag}]`);
+          log(`Trip started: ${tripId} with ${bikeId}`);
+
+          currentTripId = tripId;
+          currentTripStart = Date.now();
+          currentTripStartStation = stationName;
+          if (tripTimerHandle) clearInterval(tripTimerHandle);
+          tripTimerHandle = setInterval(updateTripStatus, 1000);
+          updateTripStatus();
+
+          await refreshStation(stationName);
         } catch (e) {
-          out("Start failed: " + e.message + ` [${clickTag}]`);
+          log("Start failed: " + e.message);
         } finally {
           btn.disabled = false;
         }
       };
-
       $("#btnEndTrip").onclick = async () => {
-        try {
-          await endTrip({
-            tripId: $("#tripId").value.trim(),
-            stationName: $("#endStation").value.trim(),
-          });
-          out("POST /api/trips/end -> OK");
+      try {
+        const tripId = $("#tripId").value.trim();
+        const stationName = $("#endStation").value.trim();
+
+        const bill = await endTrip({ tripId, stationName });   
+        log(
+          `Trip ended — billed $${(bill.amountCents / 100).toFixed(2)} for ${bill.minutesBilled} min`
+        );
+        alert(
+          `Base $2.00 + ${bill.minutesBilled} × $0.10 = $${(bill.amountCents / 100).toFixed(2)}.\n` +
+          `Your saved payment method has been charged.`
+        );
+
+
+          //where bike was taken from
+          if (currentTripStartStation) {
+            await refreshStation(currentTripStartStation);
+          }
+          //where bike is returned
+          await refreshStation(stationName);
+
+          if (currentTripId === tripId && currentTripStart) {
+            const elapsedMs = Date.now() - currentTripStart;
+            const elapsedMin = Math.floor(elapsedMs / 60000);
+            const elapsedSec = Math.floor((elapsedMs % 60000) / 1000);
+
+            const from = currentTripStartStation || "(unknown)";
+            const to = stationName || "(unknown)";
+
+            log(
+              `Trip summary: ${from} -> ${to} — ${elapsedMin} min ${elapsedSec
+                .toString()
+                .padStart(2, "0")} sec`
+            );
+          }
+
+          currentTripId = null;
+          currentTripStart = null;
+          currentTripStartStation = null;
+          if (tripTimerHandle) clearInterval(tripTimerHandle);
+          tripTimerHandle = null;
+          updateTripStatus();
         } catch (e) {
-          out("End failed: " + e.message);
+          log("End failed: " + e.message);
         }
       };
 
-      $("#btnCancel").onclick = async () => {
+      //refresh UI after move of bikes automatically
+      async function refreshStationsAfterMove(fromStation, toStation) {
         try {
-          const id = $("#resId").value.trim();
-          if (!id) return out("Cancel: missing reservation id");
-          await cancelReservation(id);
-          out(`DELETE /api/reservations/${id} -> OK`);
+          const [fromAfter, toAfter] = await Promise.all([
+            loadStation(fromStation),
+            loadStation(toStation),
+          ]);
+
+          const detNameEl = document.getElementById("detName");
+          const currentShown = detNameEl?.textContent || "";
+
+          if (fromAfter) {
+            stationCache.set(fromStation, fromAfter);
+            setMarkerColor(fromStation, colorForStation(fromAfter));
+            if (currentShown === fromStation) {
+              drawer.open(fromAfter); //re-render drawer if were on the station were changing
+            }
+          }
+
+          if (toAfter) {
+            stationCache.set(toStation, toAfter);
+            setMarkerColor(toStation, colorForStation(toAfter));
+            if (currentShown === toStation) {
+              drawer.open(toAfter);
+            }
+          }
         } catch (e) {
-          out("Cancel failed: " + e.message);
+          console.warn("refreshStationsAfterMove failed", e);
+        }
+      }
+
+      //Refresh map + drawer
+      async function refreshStation(stationName) {
+        if (!stationName) return;
+        try {
+          const data = await loadStation(stationName);
+          if (!data) return;
+
+          //Update cache and marker color
+          stationCache.set(stationName, data);
+          setMarkerColor(stationName, colorForStation(data));
+
+          //If station is open in the rhs drawer -> re-render
+          const detNameEl = document.getElementById("detName");
+          const currentShown = detNameEl?.textContent || "";
+          if (currentShown === stationName) {
+            drawer.open(data);
+          }
+        } catch (e) {
+          console.warn("refreshStation failed", e);
+        }
+      }
+
+      //button is enabled/disabled according to conditions
+      const btnMove = document.getElementById("btnMove");
+      btnMove.onclick = async () => {
+        try {
+          const bikeId = $("#mvBikeId").value.trim();
+          const fromStation = $("#mvFrom").value.trim();
+          const toStation = $("#mvTo").value.trim();
+
+          if (!fromStation || !toStation) {
+            log("Missing field. Please enter both From and To station names");
+            return;
+          }
+
+          if (fromStation === toStation) {
+            log(
+              "Move disabled: source and destination stations must be different"
+            );
+            return;
+          }
+
+          btnMove.disabled = true;
+
+          const [fromInfo, toInfo] = await Promise.all([
+            loadStation(fromStation),
+            loadStation(toStation),
+          ]);
+
+          if (!fromInfo || fromInfo.bikesAvailable === 0) {
+            log(`Move disabled: station "${fromStation}" has no bikes to move`);
+            return;
+          }
+
+          if (!toInfo || toInfo.freeDocks === 0) {
+            log(
+              `Move disabled: station "${toStation}" has no free docks; choose another destination`
+            );
+            return;
+          }
+
+          //when its OK to move -> backend
+          await moveBike({ bikeId, fromStation, toStation });
+          log("POST /api/ops/move-bike -> OK");
+          //refresh after
+          await refreshStationsAfterMove(fromStation, toStation);
+        } catch (e) {
+          log("Move failed: " + e.message);
+        } finally {
+          btnMove.disabled = false;
         }
       };
 
-      $("#btnMove").onclick = async () => {
+      $("#btnStationOOS").onclick = async () => {
         try {
-          await moveBike({
-            bikeId: $("#mvBikeId").value.trim(),
-            fromStation: $("#mvFrom").value.trim(),
-            toStation: $("#mvTo").value.trim(),
-          });
-          out("POST /api/ops/move-bike -> OK");
+          const name = $("#opStation").value.trim();
+          await setStationOOS(name);
+          log("Station OOS");
+
+          (window.setMarkerColor ?? setMarkerColor)?.(name, "#ef4444");
+
+          const detNameEl = document.getElementById("detName");
+          const currentName = detNameEl?.textContent || "";
+          if (currentName === name) {
+            const badge = document.getElementById("detStatus");
+            if (badge) {
+              badge.textContent = "OOS";
+              badge.classList.remove("status-green", "status-yellow");
+              badge.classList.add("status-red");
+            }
+          }
         } catch (e) {
-          out("Move failed: " + e.message);
+          log("OOS failed: " + e.message);
         }
       };
 
-      const elStationOOS = $("#btnStationOOS");
-      if (elStationOOS)
-        elStationOOS.onclick = async () => {
-          try {
-            await setStationOOS($("#opStation").value.trim());
-            out("POST /api/ops/stations/{name}/oos -> OK");
-          } catch (e) {
-            out("Set Station OOS failed: " + e.message);
-          }
-        };
+      $("#btnStationActive").onclick = async () => {
+        try {
+          const name = $("#opStation").value.trim();
+          await setStationActive(name);
+          log("Station active");
 
-      const elStationActive = $("#btnStationActive");
-      if (elStationActive)
-        elStationActive.onclick = async () => {
-          try {
-            await setStationActive($("#opStation").value.trim());
-            out("POST /api/ops/stations/{name}/active -> OK");
-          } catch (e) {
-            out("Set Station Active failed: " + e.message);
-          }
-        };
+          const s = stationCache?.get?.(name);
+          const color = s ? colorForStation(s) : "#22c55e";
+          (window.setMarkerColor ?? setMarkerColor)?.(name, color);
 
-      const elBikeMaint = $("#btnBikeMaint");
-      if (elBikeMaint)
-        elBikeMaint.onclick = async () => {
-          try {
-            await setBikeMaintenance($("#opBike").value.trim());
-            out("POST /api/ops/bikes/{id}/maintenance -> OK");
-          } catch (e) {
-            out("Set Bike Maintenance failed: " + e.message);
+          const detNameEl = document.getElementById("detName");
+          const currentName = detNameEl?.textContent || "";
+          if (currentName === name) {
+            const badge = document.getElementById("detStatus");
+            if (badge) {
+              badge.textContent = "Active";
+              badge.classList.remove("status-red", "status-yellow");
+              badge.classList.add("status-green");
+            }
           }
-        };
+        } catch (e) {
+          log("Active failed: " + e.message);
+        }
+      };
 
-      const elBikeAvail = $("#btnBikeAvail");
-      if (elBikeAvail)
-        elBikeAvail.onclick = async () => {
+      $("#btnBikeMaint").onclick = async () => {
+        try {
+          await setBikeMaintenance($("#opBike").value.trim());
+          log("Bike -> maintenance");
+        } catch (e) {
+          log("Maint failed: " + e.message);
+        }
+      };
+
+      $("#btnBikeAvail").onclick = async () => {
+        try {
+          await setBikeAvailable($("#opBike").value.trim());
+          log("Bike -> available");
+        } catch (e) {
+          log("Avail failed: " + e.message);
+        }
+      };
+
+      const btnLogout = document.getElementById("btnLogout");
+      if (btnLogout) {
+        btnLogout.onclick = async () => {
           try {
-            await setBikeAvailable($("#opBike").value.trim());
-            out("POST /api/ops/bikes/{id}/available -> OK");
+            await auth.signOut();
+            window.location.href = "HomePage.html";
           } catch (e) {
-            out("Set Bike Available failed: " + e.message);
+            console.error("Logout failed:", e);
           }
         };
+      }
     </script>
   </body>
 </html>

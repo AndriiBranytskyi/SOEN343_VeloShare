@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>VeloShare — Billing</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0f172a;
+      --muted: #64748b;
+      --border: rgba(15, 23, 42, 0.12);
+      --panel: #fff;
+      --bg: #f6f8fb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    .navbar {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      font-weight: 800;
+      text-decoration: none;
+      color: var(--ink);
+    }
+    .btn {
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 999px;
+      padding: 6px 14px;
+      text-decoration: none;
+      border: 1px solid #000;
+      background: #000;
+      color: #fff;
+    }
+    .ghost {
+      background: #000;
+      color: #fff;
+      text-decoration: none;
+      border: 1px solid #000;
+    }
+    .ghost:hover {
+      background: #fff;
+      color: #000;
+    }
+    .wrap { max-width: 920px; margin: 20px auto; padding: 0 12px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    h1 { margin: 4px 0 12px; font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+    .muted { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); font-size: 14px; }
+    th { font-weight: 700; background: #f8fafc; }
+    .right { text-align: right; }
+    .total { font-weight: 800; }
+    .empty { padding: 16px; text-align: center; color: var(--muted); }
+    /* Popup styles */
+    .modal {
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 8px;
+      background: white;
+      max-width: 420px;
+      margin: 40px auto;
+      text-align: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    #popup { display: none; }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar">
+    <a class="brand" href="HomePage.html">Veloshare</a>
+    <div style="display:flex; gap:8px;">
+      <a class="ghost btn" href="pricing.html">Pricing</a>
+      <a class="ghost btn" href="billing.html">Billing</a>
+      <a class="ghost btn" href="history.html">Ride History</a>
+      <a class="btn" id="btnLogout" href="HomePage.html">Sign out</a>
+    </div>
+  </nav>
+
+  <!-- billing popup after end trip -->
+  <div id="popup" class="modal">
+    <h2>Trip Charge</h2>
+    <div id="summary">Loading…</div>
+    <button id="ok">OK</button>
+  </div>
+
+  <!-- billing history -->
+  <div class="wrap" id="historyWrap" style="display:none;">
+    <div class="card">
+      <h1>Billing History</h1>
+      <p class="muted" id="subtitle">Loading…</p>
+
+      <div id="tableWrap" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th>Trip ID</th>
+              <th class="right">Minutes</th>
+              <th class="right">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+          <tfoot>
+            <tr>
+              <td class="total">Total</td>
+              <td class="right total" id="totalMin">0</td>
+              <td class="right total" id="totalAmt">$0.00</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div id="empty" class="empty" style="display:none;">No bills yet.</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth } from './firebase.js';
+    import { authFetch } from './auth.js';
+
+    const url = new URL(location.href);
+    const tripId = url.searchParams.get('tripId');
+    const endStation = url.searchParams.get('endStation');
+    const popup = document.getElementById('popup');
+    const okBtn = document.getElementById('ok');
+
+    okBtn.addEventListener('click', () => {
+      popup.style.display = 'none';
+      document.getElementById('historyWrap').style.display = 'block';
+    });
+
+    // if there's a tripId in the query, show popup receipt
+    if (tripId && endStation) {
+      popup.style.display = 'block';
+      endAndCharge(tripId, endStation);
+    } else {
+      // otherwise, show billing history
+      document.getElementById('historyWrap').style.display = 'block';
+      loadBillingHistory();
+    }
+
+    async function endAndCharge(tripId, endStation) {
+      try {
+        const resp = await fetch(`/api/billing/trips/${encodeURIComponent(tripId)}/end-and-charge?endStation=${encodeURIComponent(endStation)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (!resp.ok) {
+          const txt = await resp.text();
+          document.getElementById('summary').textContent = 'Error: ' + txt;
+          return;
+        }
+        const bill = await resp.json();
+        const dollars = (bill.amountCents / 100).toFixed(2);
+        document.getElementById('summary').textContent =
+          `Base $2.00 + ${bill.minutesBilled} min × $0.10 = $${dollars}. Your saved payment method has been charged.`;
+      } catch (e) {
+        document.getElementById('summary').textContent = 'Error: ' + e.message;
+      }
+    }
+
+    async function loadBillingHistory() {
+      const $ = (s) => document.querySelector(s);
+      auth.onAuthStateChanged(async (u) => {
+        if (!u) {
+          $('#subtitle').textContent = 'Please sign in to view your billing history.';
+          $('#empty').style.display = 'block';
+          return;
+        }
+        try {
+          const resp = await authFetch('/api/billing/mine');
+          if (!resp.ok) throw new Error(await resp.text());
+          const bills = await resp.json();
+
+          if (!Array.isArray(bills) || bills.length === 0) {
+            $('#subtitle').textContent = 'Your charges will appear here after you complete a trip.';
+            $('#empty').style.display = 'block';
+            return;
+          }
+
+          const rowsHtml = bills.map(b => `
+            <tr>
+              <td>${b.tripId}</td>
+              <td class="right">${b.minutesBilled}</td>
+              <td class="right">$${(b.amountCents / 100).toFixed(2)}</td>
+            </tr>`).join('');
+          $('#rows').innerHTML = rowsHtml;
+
+          const totalMin = bills.reduce((s,b)=>s+(b.minutesBilled||0),0);
+          const totalCents = bills.reduce((s,b)=>s+(b.amountCents||0),0);
+          $('#totalMin').textContent = totalMin;
+          $('#totalAmt').textContent = '$' + (totalCents / 100).toFixed(2);
+
+          $('#subtitle').textContent = `You have ${bills.length} charge${bills.length>1?'s':''}.`;
+          $('#tableWrap').style.display = 'block';
+        } catch (e) {
+          $('#subtitle').textContent = 'Error: ' + e.message;
+          $('#empty').style.display = 'block';
+        }
+      });
+    }
+
+    // logout behavior
+    const btnLogout = document.getElementById('btnLogout');
+    btnLogout?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try { await auth.signOut(); } finally { window.location.href = 'HomePage.html'; }
+    });
+  </script>
+
+  <!-- firebase + auth modules -->
+  <script type="module" src="./firebase.js"></script>
+  <script type="module" src="./auth.js"></script>
+</body>
+</html>

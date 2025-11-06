@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>VeloShare — Billing</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0f172a;
+      --muted: #64748b;
+      --border: rgba(15, 23, 42, 0.12);
+      --panel: #fff;
+      --bg: #f6f8fb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    .navbar {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      font-weight: 800;
+      text-decoration: none;
+      color: var(--ink);
+    }
+    .btn {
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 999px;
+      padding: 6px 14px;
+      text-decoration: none;
+      border: 1px solid #000;
+      background: #000;
+      color: #fff;
+    }
+    .ghost {
+      background: #000;
+      color: #fff;
+      text-decoration: none;
+      border: 1px solid #000;
+    }
+    .ghost:hover {
+      background: #fff;
+      color: #000;
+    }
+    .wrap { max-width: 920px; margin: 20px auto; padding: 0 12px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    h1 { margin: 4px 0 12px; font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+    .muted { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); font-size: 14px; }
+    th { font-weight: 700; background: #f8fafc; }
+    .right { text-align: right; }
+    .total { font-weight: 800; }
+    .empty { padding: 16px; text-align: center; color: var(--muted); }
+    /* Popup styles */
+    .modal {
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 8px;
+      background: white;
+      max-width: 420px;
+      margin: 40px auto;
+      text-align: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    #popup { display: none; }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar">
+    <a class="brand" href="HomePage.html">Veloshare</a>
+    <div style="display:flex; gap:8px;">
+      <a class="ghost btn" href="pricing.html">Pricing</a>
+      <a class="ghost btn" href="billing.html">Billing</a>
+      <a class="ghost btn" href="history.html">Ride History</a>
+      <a class="btn" id="btnLogout" href="HomePage.html">Sign out</a>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <div class="card" id="pricingCard" style="max-width:360px;margin:16px auto;">
+      <h1>Trip pricing</h1>
+      <p class="muted">Base fare $2.00 + $0.10 per minute</p>
+
+      <div style="display:flex;gap:8px;align-items:center;margin:10px 0 14px;">
+        <label for="minutes" style="min-width:60px;">Minutes:</label>
+        <input id="minutes" type="number" min="0" value="15" style="width:90px;padding:6px;border:1px solid var(--border);border-radius:6px;">
+      </div>
+
+      <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;">
+        <div>Base fare</div><div id="baseFare">$2.00</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:12px;">
+        <div>Time (per min)</div><div id="timeFare">$1.50</div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;border-top:1px solid var(--border);padding-top:10px;">
+        <div>Total</div><div id="totalFare" class="total">$3.50</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const BASE = 2.00;
+      const PER_MIN = 0.10;
+      const minutesEl = document.getElementById('minutes');
+      const baseEl = document.getElementById('baseFare');
+      const timeEl = document.getElementById('timeFare');
+      const totalEl = document.getElementById('totalFare');
+
+      function fmt(v){ return '$' + v.toFixed(2); }
+
+      function update(){
+        const mins = Math.max(0, Number(minutesEl.value) || 0);
+        const timeCost = mins * PER_MIN;
+        const total = BASE + timeCost;
+        baseEl.textContent = fmt(BASE);
+        timeEl.textContent = fmt(timeCost);
+        totalEl.textContent = fmt(total);
+      }
+
+      minutesEl.addEventListener('input', update);
+      update();
+    })();
+  </script>
+
+  <script>
+      // logout behavior
+    const btnLogout = document.getElementById('btnLogout');
+    btnLogout?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try { await auth.signOut(); } finally { window.location.href = 'HomePage.html'; }
+    });
+  </script>
+</body>
+</html>

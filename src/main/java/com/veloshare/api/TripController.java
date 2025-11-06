@@ -40,14 +40,14 @@ public class TripController {
     }
 
     @PostMapping("/end")
-    public ResponseEntity<?> end(@RequestBody EndTripReq req) {
+    public ResponseEntity<?> end(@RequestBody EndTripReq req, HttpServletRequest http) {
+        var user = currentUser.requireUser(http);
         String id = req.tripId() == null ? "" : req.tripId().trim();
         String station = req.stationName() == null ? "" : req.stationName().trim();
-        System.out.println("TripController.end -> tripId='" + id + "' len=" + id.length()
-                + " station='" + station + "'");
 
-        var r = trips.endTrip(new EndTripCmd(id, station));
-        return r.isOk() ? ResponseEntity.ok().build()
+        var r = trips.endTripAndBill(new EndTripCmd(id, station), user.getUserId());
+        return r.isOk()
+                ? ResponseEntity.ok(r.getValue())           // <-- return Billing JSON
                 : ResponseEntity.badRequest().body(r.getError());
     }
 
