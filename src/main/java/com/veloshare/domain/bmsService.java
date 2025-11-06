@@ -468,4 +468,8 @@ public class bmsService {
                 maintenance ? "Bike in maintenance" : "Bike available",
                 "Bike ID: " + bikeId));
     }
+
+    public Trip getActiveTrip(String tripId) {
+        return activeTrips.get(tripId);
+    }
 }

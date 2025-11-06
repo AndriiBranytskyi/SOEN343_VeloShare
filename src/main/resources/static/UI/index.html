@@ -1270,11 +1270,19 @@
         }
       };
       $("#btnEndTrip").onclick = async () => {
-        try {
-          const tripId = $("#tripId").value.trim();
-          const stationName = $("#endStation").value.trim();
-          await endTrip({ tripId, stationName });
-          log("Trip ended");
+      try {
+        const tripId = $("#tripId").value.trim();
+        const stationName = $("#endStation").value.trim();
+
+        const bill = await endTrip({ tripId, stationName });   
+        log(
+          `Trip ended — billed $${(bill.amountCents / 100).toFixed(2)} for ${bill.minutesBilled} min`
+        );
+        alert(
+          `Base $2.00 + ${bill.minutesBilled} × $0.10 = $${(bill.amountCents / 100).toFixed(2)}.\n` +
+          `Your saved payment method has been charged.`
+        );
+
 
           //where bike was taken from
           if (currentTripStartStation) {
