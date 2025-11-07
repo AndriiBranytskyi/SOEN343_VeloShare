@@ -120,6 +120,40 @@
         outline: 0;
       }
 
+    .sidecard {
+      position: fixed;
+      top: 96px;
+      left: 24px;
+      width: 360px;
+      z-index: 4;
+      background: var(--surface);
+      border: 1.5px solid #00000022;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    .sidecard-header {
+      background: var(--panel);
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidecard-header h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .sidecard-header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13.5px;
+    }
+    .sidecard-body {
+      padding: 14px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
       .search {
         display: flex;
         gap: 8px;
@@ -211,7 +245,20 @@
       </div>
     </header>
 
-    <footer class="footer">© VeloShare</footer>
+    <aside class="sidecard">
+    <div class="sidecard-header">
+      <h1>Find a bike</h1>
+      <p>Search stations or drop a pin anywhere on the map.</p>
+    </div>
+    <div class="sidecard-body">
+      <form class="search" id="searchForm" role="search">
+        <input class="search-input" type="text" placeholder="Search stations or address" aria-label="Search">
+        <button class="search-btn" type="submit">Search</button>
+      </form>
+      <div class="list" id="stationList"></div>
+    </div>
+  </aside>
+  <footer class="footer">© VeloShare</footer>
 
     <script>
       const LIGHT_STYLE = [
@@ -292,9 +339,10 @@
         if (!cap) return "#ef4444";
         if (bikes === 0 || bikes === cap) return "#ef4444";
         const pct = (bikes / cap) * 100;
-        if (pct < 25 || pct > 85) return "#f97316";
+        if (pct <= 25 || pct >= 75) return "#f97316";
         return "#22c55e";
       }
+
 
       function clearMarkers() {
         markers.forEach((m) => m.setMap(null));
@@ -310,9 +358,9 @@
         if (!Array.isArray(stations) || stations.length === 0) return;
 
         stations.forEach((s, idx) => {
-          if (s.latitude == null || s.longitude == null) return;
+          if (s.lat == null || s.lon == null) return;
           valid++;
-          const pos = { lat: Number(s.latitude), lng: Number(s.longitude) };
+          const pos = { lat: Number(s.lat), lng: Number(s.lon) };
           bounds.extend(pos);
 
           const marker = new google.maps.Marker({
@@ -325,11 +373,14 @@
           const bikes = Number(s.bikesAvailable ?? 0);
           const cap = Number(s.capacity ?? 0);
           const free = Number(s.freeDocks ?? Math.max(cap - bikes, 0));
+          const address = s.address ?? s.stationAddress ?? "Address unavailable";
+
 
           const info = new google.maps.InfoWindow({
             content: `
           <div style="font:500 14px Inter,system-ui;max-width:160px;line-height:1.25;">
             <div style="font-weight:700;margin-bottom:4px;">${s.name}</div>
+            <div style="color:#64748b;font-size:13px;margin-bottom:4px;">${address}</div>
             <div style="color:#64748b;font-size:13px;margin-bottom:6px;">
               ${bikes} bikes • ${free} free docks
             </div>
@@ -389,7 +440,7 @@
 
       function focusStation(idx) {
         const s = stations[idx];
-        const pos = { lat: Number(s.latitude), lng: Number(s.longitude) };
+        const pos = { lat: Number(s.lat), lng: Number(s.lon) };
         map.panTo(pos);
         map.setZoom(14);
         infos.forEach((i) => i.close());
@@ -439,14 +490,15 @@
             });
           });
 
-        // role -> save so Login/Register can read
-        const roleSel = document.getElementById("roleSelect");
-        const saved = localStorage.getItem("desiredRole");
-        if (saved) roleSel.value = saved;
-        roleSel.addEventListener("change", () => {
-          localStorage.setItem("desiredRole", roleSel.value);
-        });
-      };
+      //   // role -> save so Login/Register can read
+      //   const roleSel = document.getElementById("roleSelect");
+      //   const saved = localStorage.getItem("desiredRole");
+      //   if (saved) roleSel.value = saved;
+      //   roleSel.addEventListener("change", () => {
+      //     localStorage.setItem("desiredRole", roleSel.value);
+      //   });
+      // 
+    };
     </script>
 
     <script

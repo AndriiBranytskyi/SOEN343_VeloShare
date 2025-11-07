@@ -671,6 +671,14 @@
                   <label class="label">&nbsp;</label
                   ><button class="button" id="btnBikeAvail">Avail</button>
                 </div>
+                <div class="row">
+                  <div class="field" style="max-width:110px">
+                    <label class="label">&nbsp;</label>
+                    <button class="button" id="btnReloadStations" data-role="operator">
+                      Reset stations
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1040,6 +1048,65 @@
         }
       }
       window.initMap = initMap;
+
+      async function reloadStations() {
+        // Close any open drawer
+        drawer.close();
+
+        // Clear existing markers
+        for (const name in markers) {
+          markers[name].setMap(null);
+          delete markers[name];
+        }
+        stationCache.clear();
+
+        // Fetch fresh data
+        const res = await fetch("/api/stations", { cache: "no-store" });
+        if (!res.ok) throw new Error(`GET /api/stations -> ${res.status}`);
+        const stations = await res.json();
+
+        // Rebuild markers and cache
+        const bounds = new google.maps.LatLngBounds();
+        stations.forEach((s) => {
+          const pos = pickPos(s);
+          if (!pos) return;
+          const m = new google.maps.Marker({
+            map,
+            position: pos,
+            title: s.name,
+            icon: markerIcon(colorForStation(s)),
+          });
+          markers[s.name] = m;
+          stationCache.set(s.name, s);
+          bounds.extend(pos);
+
+          m.addListener("click", async () => {
+            [
+              "stationName",
+              "reserveStation",
+              "startStation",
+              "endStation",
+              "mvFrom",
+              "opStation",
+            ].forEach((id) => {
+              const el = document.getElementById(id);
+              if (el) el.value = s.name;
+            });
+            try {
+              const det = await fetch(`/api/stations/${encodeURIComponent(s.name)}`, {
+                cache: "no-store",
+              });
+              drawer.open(det.ok ? await det.json() : s);
+            } catch {
+              drawer.open(s);
+            }
+          });
+        });
+
+        if (!bounds.isEmpty()) map.fitBounds(bounds);
+      }
+
+
     </script>
 
     <script
@@ -1486,6 +1553,32 @@
           log("Avail failed: " + e.message);
         }
       };
+      async function resetSystem() {
+        const res = await fetch("/api/ops/reset", { method: "POST" });
+        if (!res.ok) throw new Error(`POST /api/ops/reset -> ${res.status}`);
+      }
+
+      const btnReloadStations = document.getElementById("btnReloadStations");
+      if (btnReloadStations) {
+        btnReloadStations.onclick = async () => {
+          if (!confirm("Reset to the original configuration?")) return;
+          btnReloadStations.disabled = true;
+          try {
+            log("Resetting system…");
+            await resetSystem();      // server resets in-memory state to initial
+            await reloadStations();   // re-fetch /api/stations and rebuild markers
+            map.getDiv().style.opacity = "0.7";
+            setTimeout(() => (map.getDiv().style.opacity = "1"), 400);
+            log("Reset complete.");
+          } catch (e) {
+            log("Reset failed: " + e.message);
+            alert("Reset failed: " + e.message);
+          } finally {
+            btnReloadStations.disabled = false;
+          }
+        };
+      }
+
 
       const btnLogout = document.getElementById("btnLogout");
       if (btnLogout) {

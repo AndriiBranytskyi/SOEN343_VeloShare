@@ -10,12 +10,23 @@ import java.util.Map;
 
 public class bmsService {
 
+    private final Object lock = new Object();
+
     private Map<String, Trip> activeTrips = new HashMap<>();
     private Map<String, Reservation> activeReservations = new HashMap<>();
     private Map<String, Station> stations = new HashMap<>();
     private TripFactory tripFactory = new TripFactory();
 
+    private String initialConfigPath;
+
+
     public void loadConfig(String filePath) {
+        synchronized (lock) {
+            // Remember the config path once so reset can reuse it
+            if (initialConfigPath == null && filePath != null && !filePath.isBlank()) {
+                initialConfigPath = filePath;
+        }
+
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             StringBuilder jsonContent = new StringBuilder();
             String line;
@@ -149,7 +160,7 @@ public class bmsService {
             throw new IllegalStateException("Failed to load config file: " + e.getMessage(), e);
         }
     }
-
+}
     private static String findString(String obj, String key) {
         String needle = "\"" + key + "\"";
         int k = obj.indexOf(needle);
@@ -471,5 +482,18 @@ public class bmsService {
 
     public Trip getActiveTrip(String tripId) {
         return activeTrips.get(tripId);
+    }
+
+    /** Clears runtime state and reloads the initial config. No external changes. */
+    public void resetToInitial() {
+        synchronized (lock) {
+            if (initialConfigPath == null) {
+                throw new IllegalStateException("Initial config path not set; call loadConfig() first");
+            }
+            activeTrips.clear();
+            activeReservations.clear();
+            loadConfig(initialConfigPath); // rebuild stations/bikes from the same file
+            emit(new Event("SYSTEM_RESET", "Reset to initial config", "file=" + initialConfigPath));
+        }
     }
 }
