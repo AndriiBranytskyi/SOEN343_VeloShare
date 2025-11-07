@@ -1,5 +1,8 @@
 package com.veloshare.application.usecases;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.veloshare.application.Result;
 import com.veloshare.application.dto.EndTripCmd;
 import com.veloshare.application.dto.StartTripCmd;
@@ -13,6 +16,7 @@ public class TripService {
 
     private final bmsService bms;
     private final BillingService billing;
+    private final Map <String,Trip> byId=new ConcurrentHashMap<>();
 
     public TripService(bmsService bms, BillingService billing) {
         this.bms = bms;
