@@ -16,7 +16,11 @@ public class bmsService {
     private Map<String, Reservation> activeReservations = new HashMap<>();
     private Map<String, Station> stations = new HashMap<>();
     private TripFactory tripFactory = new TripFactory();
-
+    private RideHistoryDomainModel rideHistory = new RideHistoryDomainModel();
+    
+    public RideHistoryDomainModel getRideHistory() {
+        return rideHistory;
+    }
     private String initialConfigPath;
 
 

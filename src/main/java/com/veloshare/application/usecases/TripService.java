@@ -43,7 +43,10 @@ public class TripService {
             Station end = bms.requireStation(cmd.stationName());
             bms.endTrip(cmd.tripId(), end);
 
-            Billing bill = billing.calculateAndStore(userId, trip);
+            Billing bill = billing.calculateAndStore(userId, trip);  
+          
+            trip.setCost(bill.getAmountCents() / 100.0);
+            bms.getRideHistory().recordCompleted(trip);
             return Result.ok(bill);
         } catch (Exception e) {
             return Result.fail(e.getMessage());

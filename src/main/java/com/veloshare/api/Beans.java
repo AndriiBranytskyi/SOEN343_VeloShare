@@ -7,9 +7,11 @@ import org.springframework.context.annotation.Configuration;
 import com.google.api.Billing;
 import com.veloshare.application.usecases.OperatorService;
 import com.veloshare.application.usecases.ReservationService;
+import com.veloshare.application.usecases.RideHistoryService;
 import com.veloshare.application.usecases.StationService;
 import com.veloshare.application.usecases.TripService;
 import com.veloshare.auth.RolesRepo;
+import com.veloshare.domain.RideHistoryAdapter;
 import com.veloshare.domain.Role;
 import com.veloshare.domain.bmsService;
 import com.veloshare.application.usecases.BillingService;
@@ -82,5 +84,11 @@ public class Beans {
         };
     }
     @Bean BillingService billingService() { return new BillingService(); }
+
+    @Bean
+    public RideHistoryService rideHistoryService(bmsService bms) {
+        // Wrap the bmsService with the adapter
+        return new RideHistoryService(new RideHistoryAdapter(bms));
+    }
 
 }
