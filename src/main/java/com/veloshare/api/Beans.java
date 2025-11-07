@@ -81,9 +81,6 @@ public class Beans {
             }
         };
     }
-    @Bean
-    public BillingService billingService(){
-        return new BillingService();
-    }
+    @Bean BillingService billingService() { return new BillingService(); }
 
 }

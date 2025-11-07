@@ -954,9 +954,9 @@
               </div>`;
             }
 
-            html += `</div>`;
+            // html += `</div>`;
             // replace grid contents (do not append)
-            grid.innerHTML += html;
+            grid.innerHTML = html;
             // if you prefer to replace rather than append, use:
             // grid.innerHTML = html; 
           }
@@ -1278,11 +1278,13 @@
         log(
           `Trip ended — billed $${(bill.amountCents / 100).toFixed(2)} for ${bill.minutesBilled} min`
         );
-        alert(
-          `Base $2.00 + ${bill.minutesBilled} × $0.10 = $${(bill.amountCents / 100).toFixed(2)}.\n` +
-          `Your saved payment method has been charged.`
-        );
+        // Open the billing popup (or so the real payment modal shows.
+        const billingPath =
+          (location.pathname.includes('/UI/') ? '/UI/billing.html' : '/billing.html');
 
+        const url = `${billingPath}?tripId=${encodeURIComponent(tripId)}&endStation=${encodeURIComponent(stationName)}`;
+
+        window.open(url, 'veloBilling', 'width=560,height=720,noopener');
 
           //where bike was taken from
           if (currentTripStartStation) {
