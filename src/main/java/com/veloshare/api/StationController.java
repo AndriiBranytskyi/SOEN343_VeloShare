@@ -18,6 +18,14 @@ public class StationController {
         this.stations = stations;
     }
 
+        //for dashboard
+    @GetMapping
+        public ResponseEntity<?> list() {
+            var all = stations.getAll();    
+            return ResponseEntity.ok(all);
+        }
+
+
     @GetMapping("/{name}") //handles GET for /api/stations/{name}.
     public ResponseEntity<?> get(@PathVariable String name) { //binds the URL segment {name} to the method parameter.
         //var figures out the type from the expression on RHS so here its instead of Result<Station>

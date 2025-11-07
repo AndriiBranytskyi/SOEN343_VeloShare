@@ -2,10 +2,63 @@
   "stations": [
     {
       "name": "Station A",
-      "latitude": 45.5,
-      "longitude": -73.6,
-      "capacity": 2,
-      "bikes": [{ "id": "bike1", "type": "standard" }]
+      "latitude": 45.4532,
+      "longitude": -73.564,
+      "capacity": 4,
+      "address": "123 Sainte-Catherine St W",
+      "bikes": [
+        { "id": "bike1", "type": "standard" },
+        { "id": "bike2", "type": "e-bike" }
+      ]
+    },
+    {
+      "name": "Station B",
+      "latitude": 45.4968,
+      "longitude": -73.5695,
+      "capacity": 3,
+      "address": "345 rue Guy",
+      "bikes": [
+        { "id": "bike3", "type": "standard" },
+        { "id": "bike4", "type": "e-bike" },
+        { "id": "bike5", "type": "standard" }
+      ]
+    },
+    {
+      "name": "Station C",
+      "latitude": 45.4845,
+      "longitude": -73.5958,
+      "capacity": 4,
+      "address": "77 Sherbrooke st",
+      "bikes": [
+        { "id": "bike6", "type": "standard" },
+        { "id": "bike7", "type": "e-bike" }
+      ]
+    },
+    {
+      "name": "Station D",
+      "latitude": 45.4755,
+      "longitude": -73.5719,
+      "capacity": 6,
+      "address": "1010 Boulevard St-Laurent",
+      "bikes": [
+        { "id": "bike8", "type": "standard" },
+        { "id": "bike9", "type": "e-bike" },
+        { "id": "bike10", "type": "standard" },
+        { "id": "bike11", "type": "e-bike" },
+        { "id": "bike12", "type": "standard" }
+      ]
+    },
+    {
+      "name": "Station E",
+      "latitude": 45.4665,
+      "longitude": -73.5932,
+      "capacity": 5,
+      "address": "300 Rue Mackay",
+      "bikes": [
+        { "id": "bike13", "type": "standard" },
+        { "id": "bike14", "type": "standard" },
+        { "id": "bike15", "type": "e-bike" }
+      ]
     }
   ],
   "expiresAfterMinutes": 10

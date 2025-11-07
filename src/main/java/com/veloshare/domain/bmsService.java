@@ -3,17 +3,34 @@ package com.veloshare.domain;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class bmsService {
+
+    private final Object lock = new Object();
 
     private Map<String, Trip> activeTrips = new HashMap<>();
     private Map<String, Reservation> activeReservations = new HashMap<>();
     private Map<String, Station> stations = new HashMap<>();
     private TripFactory tripFactory = new TripFactory();
+    private RideHistoryDomainModel rideHistory = new RideHistoryDomainModel();
+    
+    public RideHistoryDomainModel getRideHistory() {
+        return rideHistory;
+    }
+    private String initialConfigPath;
+
 
     public void loadConfig(String filePath) {
+        synchronized (lock) {
+            // Remember the config path once so reset can reuse it
+            if (initialConfigPath == null && filePath != null && !filePath.isBlank()) {
+                initialConfigPath = filePath;
+        }
+
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             StringBuilder jsonContent = new StringBuilder();
             String line;
@@ -28,7 +45,6 @@ public class bmsService {
                 throw new IllegalStateException("Invalid JSON: missing \"stations\"");
             }
             int arrStart = content.indexOf("[", stationsKey);
-            //handling the json for closing bracket for stations without detecting the bikes brackets
             int depth = 0;
             int arrEnd = -1;
             for (int i = arrStart; i < content.length(); i++) {
@@ -43,31 +59,41 @@ public class bmsService {
                     break;
                 }
             }
-
             if (arrStart < 0 || arrEnd < 0 || arrEnd <= arrStart) {
                 throw new IllegalStateException("Invalid JSON format for stations[]");
             }
 
             String stationsArray = content.substring(arrStart + 1, arrEnd).trim();
 
-            //this assumes there is no nested object except bikes[]
-            String[] stationObjs = stationsArray.split("\\},\\s*\\{");
+            // collect full station objects by matching braces
+            List<String> stationObjs = new ArrayList<>();
+            int objDepth = 0;
+            int start = -1;
+            for (int i = 0; i < stationsArray.length(); i++) {
+                char c = stationsArray.charAt(i);
+                if (c == '{') {
+                    if (objDepth == 0) {
+                        start = i;
+                    }
+                    objDepth++;
+                } else if (c == '}') {
+                    objDepth--;
+                    if (objDepth == 0 && start >= 0) {
+                        stationObjs.add(stationsArray.substring(start, i + 1));
+                        start = -1;
+                    }
+                }
+            }
 
             this.stations.clear();
 
             for (String raw : stationObjs) {
-                if (raw.startsWith("{")) {
-                    raw = raw.substring(1);
-                }
-                if (raw.endsWith("}")) {
-                    raw = raw.substring(0, raw.length() - 1);
-                }
-
-                // extract
+                // extract station fields
                 String name = findString(raw, "name");
                 String latS = findNumber(raw, "latitude");
                 String lonS = findNumber(raw, "longitude");
                 String capS = findNumber(raw, "capacity");
+                String address = findString(raw, "address");
                 if (name == null || latS == null || lonS == null || capS == null) {
                     continue;
                 }
@@ -76,29 +102,56 @@ public class bmsService {
                 double longitude = Double.parseDouble(lonS);
                 int capacity = Integer.parseInt(capS);
 
-                Station station = new Station(name, latitude, longitude, capacity);
+                Station station = new Station(name, latitude, longitude, capacity, address);
                 stations.put(name, station);
 
                 // extract bikes array inside this station object
                 int bikesIdx = raw.indexOf("\"bikes\"");
                 if (bikesIdx >= 0) {
                     int bStart = raw.indexOf("[", bikesIdx);
-                    int bEnd = raw.indexOf("]", bStart);
-                    if (bStart > 0 && bEnd > bStart) {
-                        String bikesArray = raw.substring(bStart + 1, bEnd).trim();
-                        if (!bikesArray.isEmpty()) {
-                            String[] bikeObjs = bikesArray.split("\\},\\s*\\{");
-                            for (String braw : bikeObjs) {
-                                if (braw.startsWith("{")) {
-                                    braw = braw.substring(1);
+                    if (bStart > 0) {
+                        int depthB = 0;
+                        int bEnd = -1;
+                        for (int i = bStart; i < raw.length(); i++) {
+                            char c = raw.charAt(i);
+                            if (c == '[') {
+                                depthB++;
+                            } else if (c == ']') {
+                                depthB--;
+                                if (depthB == 0) {
+                                    bEnd = i;
+                                    break;
                                 }
-                                if (braw.endsWith("}")) {
-                                    braw = braw.substring(0, braw.length() - 1);
+                            }
+                        }
+                        if (bEnd > bStart) {
+                            String bikesArray = raw.substring(bStart + 1, bEnd).trim();
+                            if (!bikesArray.isEmpty()) {
+                                List<String> bikeObjs = new ArrayList<>();
+                                int bikeDepth = 0;
+                                int bObjStart = -1;
+                                for (int i = 0; i < bikesArray.length(); i++) {
+                                    char c = bikesArray.charAt(i);
+                                    if (c == '{') {
+                                        if (bikeDepth == 0) {
+                                            bObjStart = i;
+                                        }
+                                        bikeDepth++;
+                                    } else if (c == '}') {
+                                        bikeDepth--;
+                                        if (bikeDepth == 0 && bObjStart >= 0) {
+                                            bikeObjs.add(bikesArray.substring(bObjStart, i + 1));
+                                            bObjStart = -1;
+                                        }
+                                    }
                                 }
-                                String id = findString(braw, "id");
-                                String type = findString(braw, "type");
-                                if (id != null && !id.isBlank()) {
-                                    addBikeToStation(name, id, (type != null && !type.isBlank()) ? type : "standard");
+                                for (String braw : bikeObjs) {
+                                    String id = findString(braw, "id");
+                                    String type = findString(braw, "type");
+                                    if (id != null && !id.isBlank()) {
+                                        addBikeToStation(name, id,
+                                                (type != null && !type.isBlank()) ? type : "standard");
+                                    }
                                 }
                             }
                         }
@@ -108,10 +161,10 @@ public class bmsService {
 
             emit(new Event("CONFIG_LOADED", "Configuration loaded from file", "Stations: " + stations.size()));
         } catch (IOException | NumberFormatException e) {
-            throw new IllegalStateException("Failed to load config file: " + e.getMessage());
+            throw new IllegalStateException("Failed to load config file: " + e.getMessage(), e);
         }
     }
-
+}
     private static String findString(String obj, String key) {
         String needle = "\"" + key + "\"";
         int k = obj.indexOf(needle);
@@ -225,7 +278,7 @@ public class bmsService {
         }
         if (bike.isOnTrip()) {
             throw new IllegalStateException("Bike " + bikeId + " is currently on a trip");
-        }   
+        }
 
         fromDock.release();
         startStation.updateCounts();
@@ -257,13 +310,13 @@ public class bmsService {
         Dock dock = endStation.getDocks().stream()
                 .filter(d -> d.getStatus() == DockStatus.FREE)
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No free docks at " + endStation.getName()));
+                .orElseThrow(() -> new IllegalStateException("No free docks at " + endStation.getName() + ". Please return your bike to another nearby station"));
 
         Bike bike = trip.getBike();
         if (bike == null) {
             System.out.println("WARN DEBUG: trip " + tripId + " has null bike");
             bike = new Bike(trip.getBikeId(), "standard");
-            trip.setBike(bike); 
+            trip.setBike(bike);
         }
 
         bike.endTrip(); //bike is switched back to available was confirmed with debug
@@ -279,7 +332,7 @@ public class bmsService {
 
     public void reserveBike(String userId, String bikeId, int holdMinutes, Station station) {
         if (activeReservations.values().stream().anyMatch(r -> r.getUserId().equals(userId) && r.isValid())) {
-            throw new IllegalStateException("User " + userId + " already has an active reservation");
+            throw new IllegalStateException("User already has an active reservation");
         }
 
         Dock dock = station.getDocks().stream()
@@ -299,8 +352,7 @@ public class bmsService {
         }
 
         Reservation reservation = new Reservation("res" + bikeId + userId, bikeId, userId, holdMinutes);
-        bike.reserve(reservation.getExpiresAt()); 
-         
+        bike.reserve(reservation.getExpiresAt());
         System.out.println(bike.getState()); //debug
 
         activeReservations.put(reservation.getReservationId(), reservation);
@@ -331,7 +383,7 @@ public class bmsService {
         Dock fromDock = fromStation.getDocks().stream()
                 .filter(d -> d.getBike() != null && d.getBike().getId().equals(bikeId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("[reserveBike] Bike " + bikeId + " not found at station"));
+                .orElseThrow(() -> new IllegalStateException("Bike " + bikeId + " not found at station"));
 
         Bike bike = fromDock.getBike();
         fromDock.release();
@@ -430,5 +482,22 @@ public class bmsService {
         emit(new Event("BIKE_STATUS_CHANGE",
                 maintenance ? "Bike in maintenance" : "Bike available",
                 "Bike ID: " + bikeId));
+    }
+
+    public Trip getActiveTrip(String tripId) {
+        return activeTrips.get(tripId);
+    }
+
+    /** Clears runtime state and reloads the initial config. No external changes. */
+    public void resetToInitial() {
+        synchronized (lock) {
+            if (initialConfigPath == null) {
+                throw new IllegalStateException("Initial config path not set; call loadConfig() first");
+            }
+            activeTrips.clear();
+            activeReservations.clear();
+            loadConfig(initialConfigPath); // rebuild stations/bikes from the same file
+            emit(new Event("SYSTEM_RESET", "Reset to initial config", "file=" + initialConfigPath));
+        }
     }
 }

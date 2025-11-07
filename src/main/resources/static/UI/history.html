@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>VeloShare — Ride History</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: "Inter", sans-serif; margin:0; background:#f6f8fb; color:#0f172a; }
+    .navbar { background:#fff; border-bottom:1px solid #ddd; padding:10px 18px; display:flex; justify-content:space-between; }
+    .brand { font-weight:800; text-decoration:none; color:#0f172a; }
+    .btn { font-size:13px; font-weight:600; border-radius:999px; padding:6px 14px; border:1px solid #000; background:#000; color:#fff; cursor:pointer; }
+    .ghost { background:#fff; color:#000; border:1px solid #000; }
+    .wrap { max-width:920px; margin:20px auto; padding:0 12px; }
+    .card { background:#fff; border:1px solid #ddd; border-radius:10px; padding:14px; }
+    h1 { margin:4px 0 12px; font-size:20px; font-weight:800; }
+    .muted { color:#64748b; font-size:13px; margin:0 0 12px; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:10px; border-bottom:1px solid #ddd; font-size:14px; }
+    th { font-weight:700; background:#f8fafc; }
+    .right { text-align:right; }
+    .empty { padding:16px; text-align:center; color:#64748b; }
+    .filters { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; align-items:flex-end; }
+    .filters label { font-size:12px; font-weight:600; margin-bottom:2px; }
+    .filters input, .filters select { padding:6px 10px; border:1px solid #ddd; border-radius:6px; font-size:14px; }
+    .modal { border:1px solid #ddd; padding:20px; border-radius:8px; background:#fff; max-width:500px; margin:40px auto; display:none; }
+    .details-row { display:flex; justify-content:space-between; margin-bottom:6px; }
+    .details-row .label { font-weight:600; color:#64748b; }
+    .error { color:#b00020; font-size:13px; margin:6px 0 0; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a class="brand" href="index.html">Veloshare</a>
+    <div style="display:flex; gap:8px;">
+      <a class="ghost btn" href="pricing.html">Pricing</a>
+      <a class="ghost btn" href="billing.html">Billing</a>
+      <a class="ghost btn" href="history.html">Ride History</a>
+      <a class="btn" id="btnLogout" href="HomePage.html">Sign out</a>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <div class="card">
+      <h1>Ride History</h1>
+      <p class="muted" id="subtitle">Search and filter your past rides.</p>
+
+      <div class="filters">
+        <div style="display:flex; flex-direction:column;">
+          <label for="searchTripId">Trip ID</label>
+          <input type="text" id="searchTripId" placeholder="trip123" />
+          <span id="tripIdError" class="error" style="display:none;"></span>
+        </div>
+        <div style="display:flex; flex-direction:column;">
+          <label for="startDate">Start Date</label>
+          <input type="date" id="startDate" aria-label="Start Date" />
+        </div>
+        <div style="display:flex; flex-direction:column;">
+          <label for="endDate">End Date</label>
+          <input type="date" id="endDate" aria-label="End Date" />
+          <span id="dateError" class="error" style="display:none;"></span>
+        </div>
+        <div style="display:flex; flex-direction:column;">
+          <label for="bikeType">Bike Type</label>
+          <select id="bikeType" aria-label="Bike Type">
+            <option value="">All types</option>
+            <option value="standard">Standard</option>
+            <option value="e-bike">E-bike</option>
+          </select>
+        </div>
+        <button class="btn" id="applyFilters">Apply</button>
+        <button class="ghost btn" id="clearFilters">Clear</button>
+      </div>
+
+      <div id="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Trip ID</th>
+              <th>Rider</th>
+              <th>Route</th>
+              <th>Bike Type</th>
+              <th class="right">Cost</th>
+              <th class="right">Ended</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+
+      <div id="empty" class="empty" style="display:none;">No rides found. Clear filters or check Trip ID.</div>
+    </div>
+  </div>
+
+  <div id="detailsPopup" class="modal">
+    <h2>Ride Details</h2>
+    <div id="detailsContent">Loading…</div>
+    <button id="closeDetails" class="btn" style="margin-top:10px;">Close</button>
+  </div>
+  <script type="module">
+    import { auth, db } from './firebase.js';
+    import { authFetch } from "./auth.js";
+	import { ref, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    const API_BASE = "/api/history";
+    const $rows = document.getElementById('rows');
+    const $empty = document.getElementById('empty');
+    const $subtitle = document.getElementById('subtitle');
+    const $apply = document.getElementById('applyFilters');
+    const $clear = document.getElementById('clearFilters');
+    const $tripId = document.getElementById('searchTripId');
+    const $tripIdError = document.getElementById('tripIdError');
+    const $startDate = document.getElementById('startDate');
+    const $endDate = document.getElementById('endDate');
+    const $dateError = document.getElementById('dateError');
+    const $bikeType = document.getElementById('bikeType');
+    const $detailsPopup = document.getElementById('detailsPopup');
+    const $detailsContent = document.getElementById('detailsContent');
+    document.getElementById('closeDetails').onclick = () => $detailsPopup.style.display='none';
+
+    const fmtMoney = cents => '$' + (cents/100).toFixed(2);
+    const fmtEnded = d => new Date(d).toLocaleString();
+
+	async function getUsernameByUid(uid) {
+	  if (!uid) return "-";
+	  try {
+	    const snap = await get(ref(db, `users/${uid}/username`));
+	    if (snap.exists()) {
+	      return snap.val();
+	    }
+	    return uid; // fallback if no username stored
+	  } catch (err) {
+	    console.error("Failed to fetch username for", uid, err);
+	    return uid;
+	  }
+	}
+	
+    const stationName = (s) => {
+      if (!s) return "-";
+      if (typeof s === "string") return s || "-";
+      if (typeof s === "object") return s.name || "-";
+      return "-";
+    };
+
+    async function fetchAll() {
+      const resp = await authFetch(`${API_BASE}/filter`);
+      if (!resp.ok) {
+        $subtitle.textContent = `Error: ${await resp.text()}`;
+        return [];
+      }
+      return resp.json();
+    }
+
+    async function fetchByTripId(id) {
+      const resp = await authFetch(`${API_BASE}/search?tripId=${encodeURIComponent(id)}`);
+      if (!resp.ok) return [];
+      const text = await resp.text();
+      if (!text) return [];
+      try {
+        const ride = JSON.parse(text);
+        return ride ? [ride] : [];
+      } catch {
+        return [];
+      }
+    }
+
+    async function fetchFiltered(start, end, type) {
+      const params = new URLSearchParams();
+      if (start) params.append("start", start);
+      if (end) params.append("end", end);
+      if (type) params.append("bikeType", type);
+      const url = params.toString() ? `${API_BASE}/filter?${params}` : `${API_BASE}/filter`;
+      const resp = await authFetch(url);
+      if (!resp.ok) return [];
+      return resp.json();
+    }
+
+    async function fetchDetails(id) {
+      const resp = await authFetch(`${API_BASE}/${id}`);
+      if (!resp.ok) return null;
+      return resp.json();
+    }
+
+    async function render(list) {
+      $rows.innerHTML = '';
+
+      if (!Array.isArray(list) || list.length === 0) {
+        $empty.style.display = 'block';
+        $subtitle.textContent = 'No rides match. Clear filters or check the Trip ID.';
+        return;
+      }
+
+      $empty.style.display = 'none';
+      $subtitle.textContent = `Showing ${list.length} ride${list.length>1?'s':''}.`;
+
+      // Enrich each trip with full details
+      const enriched = await Promise.all(list.map(r => fetchDetails(r.tripId)));
+      const valid = enriched.filter(Boolean);
+
+      valid.sort((a, b) => {
+        const ta = a.endTime ? new Date(a.endTime).getTime() : 0;
+        const tb = b.endTime ? new Date(b.endTime).getTime() : 0;
+        return tb - ta;
+      });
+
+	  for (const details of valid) {
+	    const cost = details.billing ? Math.round(details.billing * 100) : 0;
+	    const username = await getUsernameByUid(details.rider);
+
+	    const tr = document.createElement('tr');
+	    tr.innerHTML = `
+	      <td>${details.tripId || "-"}</td>
+	      <td>${username}</td>
+	      <td>${stationName(details.startStation)} → ${stationName(details.endStation)}</td>
+	      <td>${details.bikeType || "standard"}</td>
+	      <td class="right">${fmtMoney(cost)}</td>
+	      <td class="right">${details.endTime ? fmtEnded(details.endTime) : "-"}</td>
+	    `;
+	    tr.onclick = async () => {
+	      $detailsContent.innerHTML = `
+	        <div class="details-row"><span class="label">Trip ID</span><span>${details.tripId}</span></div>
+	        <div class="details-row"><span class="label">Rider</span><span>${username}</span></div>
+	        <div class="details-row"><span class="label">Start Station</span><span>${stationName(details.startStation)}</span></div>
+	        <div class="details-row"><span class="label">End Station</span><span>${stationName(details.endStation)}</span></div>
+	        <div class="details-row"><span class="label">Bike Type</span><span>${details.bikeType}</span></div>
+	        <div class="details-row"><span class="label">Duration</span><span>${details.durationMinutes} min</span></div>
+	        <div class="details-row"><span class="label">Cost</span><span>${fmtMoney(cost)}</span></div>
+	        <div class="details-row"><span class="label">Ended</span><span>${details.endTime ? fmtEnded(details.endTime) : "-"}</span></div>
+	      `;
+	      $detailsPopup.style.display = 'block';
+	    };
+	    $rows.appendChild(tr);
+	  }
+    }
+
+    function validateTripId(id) {
+      if (!id) return null;
+      const ok = /^trip[0-9A-Za-z_-]+$/.test(id.trim());
+      return ok ? null : 'Invalid Trip ID format';
+    }
+
+    function validateDates(startStr, endStr) {
+      if (!startStr && !endStr) return null;
+      const start = startStr ? new Date(startStr) : null;
+      const end = endStr ? new Date(endStr) : null;
+      if (start && end && end < start) return 'End date is before start date';
+      return null;
+    }
+
+    async function applyFilters() {
+      $tripIdError.style.display = 'none';
+      $dateError.style.display = 'none';
+
+      const id = $tripId.value.trim();
+      const startStr = $startDate.value;
+      const endStr = $endDate.value;
+      const type = $bikeType.value;
+
+      const idErr = validateTripId(id);
+      if (idErr) {
+        $tripIdError.textContent = idErr;
+        $tripIdError.style.display = 'block';
+        return;
+      }
+      const dateErr = validateDates(startStr, endStr);
+      if (dateErr) {
+        $dateError.textContent = dateErr;
+        $dateError.style.display = 'block';
+        return;
+      }
+
+      let list;
+      if (id) {
+        list = await fetchByTripId(id);
+      } else {
+        list = await fetchFiltered(startStr, endStr, type);
+      }
+      render(list);
+    }
+
+    async function clearFilters() {
+      $tripId.value = '';
+      $startDate.value = '';
+      $endDate.value = '';
+      $bikeType.value = '';
+      $tripIdError.style.display = 'none';
+      $dateError.style.display = 'none';
+      const list = await fetchAll();
+      render(list);
+    }
+
+    auth.onAuthStateChanged((u) => {
+      if (!u) {
+        $subtitle.textContent = 'Please sign in to view your ride history.';
+        $empty.style.display = 'block';
+        return;
+      }
+      clearFilters();
+    });
+
+    $apply.addEventListener('click', applyFilters);
+    $clear.addEventListener('click', clearFilters);
+
+    const btnLogout = document.getElementById('btnLogout');
+    btnLogout?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try { await auth.signOut(); } finally { window.location.href = 'HomePage.html'; }
+    });
+	</script>
+	</body>
+</html>

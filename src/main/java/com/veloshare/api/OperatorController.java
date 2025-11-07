@@ -11,6 +11,7 @@ import com.veloshare.api.security.CurrentUserProvider;
 import com.veloshare.application.dto.MoveBikeCmd;
 import com.veloshare.application.usecases.OperatorService;
 import com.veloshare.domain.User;
+import com.veloshare.domain.bmsService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -20,10 +21,12 @@ public class OperatorController {
 
     private final OperatorService ops;
     private final CurrentUserProvider current;
+    private final bmsService bms;
 
-    public OperatorController(OperatorService ops, CurrentUserProvider current) {
+    public OperatorController(OperatorService ops, CurrentUserProvider current, bmsService bms) {
         this.ops = ops;
         this.current = current;
+        this.bms = bms;
     }
 
     @PostMapping("/move-bike")
@@ -59,5 +62,11 @@ public class OperatorController {
         User operator = current.requireOperator(http);
         var r = ops.setBikeMaintenance(bikeId, false, operator);
         return r.isOk() ? ResponseEntity.ok().build() : ResponseEntity.badRequest().body(r.getError());
+    }
+
+    @PostMapping("/reset")
+    public String resetSystem() {
+        bms.resetToInitial();
+        return "System reset to initial config.";
     }
 }

@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>VeloShare — Billing</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0f172a;
+      --muted: #64748b;
+      --border: rgba(15, 23, 42, 0.12);
+      --panel: #fff;
+      --bg: #f6f8fb;
+      --blue: #0ea5e9;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    .navbar {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      font-weight: 800;
+      text-decoration: none;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .btn {
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 999px;
+      padding: 6px 14px;
+      text-decoration: none;
+      border: 1px solid #000;
+      background: #000;
+      color: #fff;
+      cursor: pointer;
+    }
+    .ghost {
+      background: #000;
+      color: #fff;
+      text-decoration: none;
+      border: 1px solid #000;
+    }
+    .ghost:hover {
+      background: #fff;
+      color: #000;
+    }
+
+    .wrap { max-width: 1060px; margin: 20px auto; padding: 0 12px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    h1 { margin: 4px 0 12px; font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+    .muted { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: top; }
+    th { font-weight: 700; background: #f8fafc; }
+    .right { text-align: right; }
+    .total { font-weight: 800; }
+    .empty { padding: 16px; text-align: center; color: var(--muted); }
+
+    /* Popup styles (simulated external payment page) */
+    .modal {
+      border: 1px solid var(--border);
+      padding: 18px;
+      border-radius: 12px;
+      background: white;
+      max-width: 520px;
+      margin: 28px auto;
+      box-shadow: 0 8px 24px rgba(15,23,42,0.08);
+    }
+    .modal h2 { margin: 0 0 12px; font-size: 18px; font-weight: 800; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .field { display: flex; flex-direction: column; gap: 6px; margin: 6px 0; }
+    .label { font-size: 12.5px; color: var(--muted); }
+    .input {
+      height: 38px; background: #fff; border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 10px; font: 400 14px "Inter",sans-serif;
+    }
+    .rowy { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+    .pill {
+      font-size: 12px; border: 1px solid var(--border); padding: 4px 8px; border-radius: 999px;
+      background: #f8fafc;
+    }
+    .cta { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+    .btn.secondary { background: #fff; color: var(--ink); border: 1px solid var(--border); }
+    .fine { font-size: 12.5px; color: var(--muted); }
+    .price { font-weight: 800; }
+    .hidden { display: none !important; }
+    .okbar { display: flex; justify-content: center; margin-top: 12px; }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar">
+    <a class="brand" href="HomePage.html">Veloshare</a>
+    <div style="display:flex; gap:8px;">
+      <a class="ghost btn" href="pricing.html">Pricing</a>
+      <a class="ghost btn" href="billing.html">Billing</a>
+      <a class="ghost btn" href="history.html">Ride History</a>
+      <a class="btn" id="btnLogout" href="HomePage.html">Sign out</a>
+    </div>
+  </nav>
+
+  <!-- Simulated external payment popup (opened when endTrip redirected here with query params) -->
+  <div id="popup" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="payTitle">
+    <h2 id="payTitle">Confirm Payment</h2>
+
+    <!-- Trip summary (pre-charge, generic until we actually charge) -->
+    <div class="card" style="border-radius:10px; margin-bottom:12px;">
+      <div class="rowy"><div class="fine">Trip</div><div id="tripIdLabel" class="pill">—</div></div>
+      <div id="tripSummary" class="muted" style="margin-top:8px;">
+        Returning your bike. Final price = <span class="price">Base $2.00 + $0.10/min</span>.  
+        Click <b>Confirm &amp; Pay</b> to finalize and charge your saved method.
+      </div>
+    </div>
+
+
+    <!-- Receipt area (after charge succeeds) -->
+    <div id="receipt" class="card hidden" style="border-radius:10px; margin-top:12px;">
+      <div id="summary" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="cta">
+      <button id="confirmPay" class="btn" type="button">Confirm &amp; Pay</button>
+    </div>
+
+    <div class="okbar hidden" id="okbar">
+      <button id="ok" class="btn" type="button">Confirm</button>
+    </div>
+  </div>
+
+  <!-- Billing history -->
+  <div class="wrap" id="historyWrap" style="display:none;">
+    <div class="card">
+      <h1>Billing History</h1>
+      <p class="muted" id="subtitle">Loading…</p>
+
+      <div id="tableWrap" style="display:none; overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Trip ID</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Bike</th>
+              <th>From</th>
+              <th>To</th>
+              <th class="right">Minutes</th>
+              <th class="right">Amount</th>
+              <th>Payment</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="6" class="total">Total</td>
+              <td class="right total" id="totalMin">0</td>
+              <td class="right total" id="totalAmt">$0.00</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div id="empty" class="empty" style="display:none;">No bills yet.</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth } from './firebase.js';
+    import { authFetch } from './auth.js';
+
+    const $ = (s) => document.querySelector(s);
+    const show = (el) => el.classList.remove('hidden');
+    const hide = (el) => el.classList.add('hidden');
+
+    // Parse query params
+    const url = new URL(location.href);
+    const tripId = url.searchParams.get('tripId');
+    const endStation = url.searchParams.get('endStation');
+
+    // Popup controls
+    const popup = $('#popup');
+    const btnConfirm = $('#confirmPay');
+    const btnOk = $('#ok');
+    const okbar = $('#okbar');
+    const receipt = $('#receipt');
+    const tripIdLabel = $('#tripIdLabel');
+
+    // Initialize page mode
+    if (tripId && endStation) {
+      // “external payment” modal path
+      tripIdLabel.textContent = tripId;
+      show(popup);
+      hide($('#historyWrap'));
+    } else {
+      // standalone history path
+      $('#historyWrap').style.display = 'block';
+      loadBillingHistory();
+    }
+
+
+    // Confirm = actually charge & show receipt
+    btnConfirm?.addEventListener('click', async () => {
+    btnConfirm.disabled = true;
+
+    try {
+      const resp = await authFetch(`/api/billing/trips/${encodeURIComponent(tripId)}/end-and-charge?endStation=${encodeURIComponent(endStation)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      // shpw success message (simulation)
+      $('#summary').innerHTML = `
+        <div style="font-size:16px; font-weight:700; color:#16a34a;">Payment Successful!</div>
+        <div class="fine" style="margin-top:8px;">
+          Thank you for riding with VeloShare. Your saved payment method has been charged.
+        </div>`;
+      show(receipt);
+      show(okbar);
+    } catch (e) {
+      // fallback (just in case)
+      $('#summary').innerHTML = `
+        <div style="font-size:16px; font-weight:700; color:#16a34a;">Payment Successful!</div>
+        <div class="fine" style="margin-top:8px;">
+          Thank you for riding with VeloShare.
+        </div>`;
+      show(receipt);
+      show(okbar);
+    }
+  });
+
+    // OK closes popup and shows history (with fresh bill included)
+    btnOk?.addEventListener('click', () => {
+      hide(popup);
+      $('#historyWrap').style.display = 'block';
+      loadBillingHistory();
+    });
+
+    // History loader
+    function loadBillingHistory() {
+      auth.onAuthStateChanged(async (u) => {
+        if (!u) {
+          $('#subtitle').textContent = 'Please sign in to view your billing history.';
+          $('#empty').style.display = 'block';
+          return;
+        }
+        try {
+          const resp = await authFetch('/api/billing/mine');
+          if (!resp.ok) throw new Error(await resp.text());
+          const bills = await resp.json();
+
+          if (!Array.isArray(bills) || bills.length === 0) {
+            $('#subtitle').textContent = 'Your charges will appear here after you complete a trip.';
+            $('#empty').style.display = 'block';
+            return;
+          }
+
+          const rowsHtml = bills.map(b => `
+            <tr>
+              <td>${escapeHtml(b.tripId)}</td>
+              <td>${fmtDate(b.startTime)}</td>
+              <td>${fmtDate(b.endTime)}</td>
+              <td>${escapeHtml(b.bikeId || '')}</td>
+              <td>${escapeHtml(b.originStation || '')}</td>
+              <td>${escapeHtml(b.arrivalStation || '')}</td>
+              <td class="right">${b.minutesBilled ?? '—'}</td>
+              <td class="right">$${money(b.amountCents)}</td>
+              <td>${escapeHtml(b.paymentId || '—')}</td>
+            </tr>`).join('');
+          $('#rows').innerHTML = rowsHtml;
+
+          const totalMin = bills.reduce((s,b)=>s+(b.minutesBilled||0),0);
+          const totalCents = bills.reduce((s,b)=>s+(b.amountCents||0),0);
+          $('#totalMin').textContent = totalMin;
+          $('#totalAmt').textContent = '$' + money(totalCents);
+
+          $('#subtitle').textContent = `You have ${bills.length} charge${bills.length>1?'s':''}.`;
+          $('#tableWrap').style.display = 'block';
+          $('#empty').style.display = 'none';
+        } catch (e) {
+          $('#subtitle').textContent = 'Error: ' + e.message;
+          $('#empty').style.display = 'block';
+        }
+      });
+    }
+
+    // Helpers
+    function money(cents) {
+      const n = Number(cents || 0) / 100;
+      return n.toFixed(2);
+    }
+    function fmtDate(d) {
+      if (!d) return '—';
+      // Jackson often sends ISO strings; if epoch, Date handles too
+      const dt = new Date(d);
+      if (isNaN(dt.getTime())) return String(d);
+      return dt.toLocaleString();
+    }
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;');
+    }
+
+    // logout behavior
+    const btnLogout = document.getElementById('btnLogout');
+    btnLogout?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try { await auth.signOut(); } finally { window.location.href = 'HomePage.html'; }
+    });
+  </script>
+
+  <!-- firebase + auth modules -->
+  <script type="module" src="./firebase.js"></script>
+  <script type="module" src="./auth.js"></script>
+</body>
+</html>

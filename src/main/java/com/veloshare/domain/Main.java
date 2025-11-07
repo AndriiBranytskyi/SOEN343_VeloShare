@@ -12,7 +12,7 @@ public class Main {
         }
 
         Station station = bmsService.getStationReadModel("Station A").getName() != null
-                ? new Station("Station A", 45.5, -73.5, 2) : null;
+                ? new Station("Station A", 45.5, -73.5, 2, "-") : null;
         if (station == null) {
             throw new IllegalStateException("Station not loaded");
         }

@@ -81,4 +81,13 @@ public class Trip {
         this.endTime = new Date();
         this.isActive = false;
     }
+
+    public long getDurationMillis() {
+        if (endTime == null || startTime == null) return 0L;
+        return Math.max(0L, endTime.getTime() - startTime.getTime());
+    }
+
+	public void setCost(double d) {
+		this.cost =d;
+	}
 }

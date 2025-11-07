@@ -1,18 +1,509 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Home</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <div class="homepage-header">
-    <h1>Welcome to VeloShare!</h1>
-    <nav>
-      <a href="Register.html" class="home-link">Register</a>
-      <a href="LoginPage.html" class="home-link">Login</a>
-    </nav>
-  </div>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VeloShare — Home</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f6f7fb;
+        --surface: #ffffff;
+        --panel: #f1f5f9;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --border: #e5e7eb;
+        --primary: #111827;
+        --primary-ink: #ffffff;
+        --accent: #3b82f6;
+        --shadow-lg: 0 20px 40px rgba(2, 8, 23, 0.08),
+          0 2px 6px rgba(2, 8, 23, 0.05);
+        --shadow-md: 0 10px 24px rgba(2, 8, 23, 0.06),
+          0 1px 3px rgba(2, 8, 23, 0.05);
+        --radius: 14px;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      }
+
+      #map {
+        flex: 1 1 auto;
+        width: 100%;
+        height: 100vh;
+        background: #f2f6f7;
+      }
+
+      .appbar {
+        position: fixed;
+        inset: 0 auto auto 0;
+        right: 0;
+        height: 64px;
+        z-index: 5;
+        background: var(--surface);
+        border-bottom: 1.5px solid #00000022;
+        display: flex;
+        align-items: center;
+      }
+      .container {
+        width: min(1200px, 94vw);
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        text-decoration: none;
+        color: inherit;
+      }
+      .logo {
+        width: 22px;
+        height: 24px;
+        border-radius: 5px;
+        background: var(--primary);
+      }
+      .brand-name {
+        color: black;
+        text-decoration: none;
+        font-size: 24px;
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 38px;
+        padding: 0 16px;
+        border-radius: 999px;
+        font-weight: 700;
+      }
+      .btn.primary {
+        background: var(--primary);
+        color: var(--primary-ink);
+        border: 1px solid var(--primary);
+        text-decoration: none;
+      }
+      .btn.ghost {
+        background: var(--surface);
+        color: var(--primary);
+        border: 1px solid var(--primary);
+        text-decoration: none;
+      }
+
+      /* role selector */
+      .role-select {
+        height: 32px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--surface);
+        padding: 0 10px;
+        font-size: 13px;
+        color: var(--ink);
+        outline: 0;
+      }
+
+    .sidecard {
+      position: fixed;
+      top: 96px;
+      left: 24px;
+      width: 360px;
+      z-index: 4;
+      background: var(--surface);
+      border: 1.5px solid #00000022;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    .sidecard-header {
+      background: var(--panel);
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidecard-header h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .sidecard-header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13.5px;
+    }
+    .sidecard-body {
+      padding: 14px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+      .search {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 6px;
+        box-shadow: var(--shadow-md);
+      }
+      .search-input {
+        flex: 1;
+        border: 0;
+        background: transparent;
+        outline: 0;
+        font-size: 15px;
+        padding: 10px 12px;
+      }
+      .search-btn {
+        border: 1px solid var(--primary);
+        background: var(--primary);
+        color: var(--primary-ink);
+        border-radius: 999px;
+        padding: 10px 16px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .item {
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .item .meta {
+        color: var(--muted);
+        font-size: 12.5px;
+      }
+
+      .footer {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 14px;
+        z-index: 3;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 12px;
+        box-shadow: var(--shadow-md);
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 13px;
+      }
+
+      @media (max-width: 760px) {
+        .nav .btn.ghost {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <header class="appbar">
+      <div class="container">
+        <a class="brand" href="HomePage.html">
+          <div class="logo"></div>
+          <span class="brand-name">VeloShare</span>
+        </a>
+        <nav class="nav">
+          <a class="ghost btn" href="pricing.html">Pricing</a>
+          <a class="btn ghost" href="LoginPage.html">Log in</a>
+          <a class="btn primary" href="Register.html">Sign up</a>
+        </nav>
+      </div>
+    </header>
+
+    <aside class="sidecard">
+    <div class="sidecard-header">
+      <h1>Find a bike</h1>
+      <p>Search stations or drop a pin anywhere on the map.</p>
+    </div>
+    <div class="sidecard-body">
+      <form class="search" id="searchForm" role="search">
+        <input class="search-input" type="text" placeholder="Search stations or address" aria-label="Search">
+        <button class="search-btn" type="submit">Search</button>
+      </form>
+      <div class="list" id="stationList"></div>
+    </div>
+  </aside>
+  <footer class="footer">© VeloShare</footer>
+
+    <script>
+      const LIGHT_STYLE = [
+        { elementType: "geometry", stylers: [{ color: "#f8fafc" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#475569" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
+        {
+          featureType: "water",
+          elementType: "geometry",
+          stylers: [{ color: "#c9e6ff" }],
+        },
+        {
+          featureType: "poi",
+          elementType: "labels.icon",
+          stylers: [{ visibility: "off" }],
+        },
+        { featureType: "transit", stylers: [{ visibility: "off" }] },
+        {
+          featureType: "road",
+          elementType: "geometry",
+          stylers: [{ color: "#ffffff" }],
+        },
+        {
+          featureType: "road",
+          elementType: "labels.text.fill",
+          stylers: [{ color: "#334155" }],
+        },
+        {
+          featureType: "road.highway",
+          elementType: "geometry",
+          stylers: [{ color: "#fef3c7" }],
+        },
+        {
+          featureType: "administrative",
+          elementType: "geometry",
+          stylers: [{ visibility: "off" }],
+        },
+      ];
+
+      function markerSvgEncoded(fill = "#3B82F6") {
+        const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42" fill="none">
+        <path d="M16 41s12-11.2 12-23A12 12 0 0 0 4 18c0 11.8 12 23 12 23z" fill="${fill}"/>
+        <circle cx="16" cy="18" r="5.5" fill="white"/>
+      </svg>`;
+        return (
+          "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg.trim())
+        );
+      }
+      function markerIcon(fill) {
+        return {
+          url: markerSvgEncoded(fill),
+          scaledSize: new google.maps.Size(32, 42),
+        };
+      }
+
+      let map,
+        geocoder,
+        stations = [],
+        markers = [],
+        infos = [];
+
+      // HOME should read from BMS
+      async function loadStations() {
+        const res = await fetch("/api/stations", { cache: "no-store" });
+        if (!res.ok) {
+          console.warn("GET /api/stations failed, showing empty map");
+          return [];
+        }
+        return await res.json();
+      }
+
+      // same DM color thresholds
+      function colorForStation(s) {
+        if (s.out_of_service) return "#ef4444";
+        const cap = Number(s.capacity) || 0;
+        const bikes = Number(s.bikesAvailable ?? 0);
+        if (!cap) return "#ef4444";
+        if (bikes === 0 || bikes === cap) return "#ef4444";
+        const pct = (bikes / cap) * 100;
+        if (pct <= 25 || pct >= 75) return "#f97316";
+        return "#22c55e";
+      }
+
+
+      function clearMarkers() {
+        markers.forEach((m) => m.setMap(null));
+        markers = [];
+        infos = [];
+      }
+
+      function addMarkers() {
+        clearMarkers();
+        const bounds = new google.maps.LatLngBounds();
+        let valid = 0;
+
+        if (!Array.isArray(stations) || stations.length === 0) return;
+
+        stations.forEach((s, idx) => {
+          if (s.lat == null || s.lon == null) return;
+          valid++;
+          const pos = { lat: Number(s.lat), lng: Number(s.lon) };
+          bounds.extend(pos);
+
+          const marker = new google.maps.Marker({
+            position: pos,
+            map,
+            title: s.name,
+            icon: markerIcon(colorForStation(s)),
+          });
+
+          const bikes = Number(s.bikesAvailable ?? 0);
+          const cap = Number(s.capacity ?? 0);
+          const free = Number(s.freeDocks ?? Math.max(cap - bikes, 0));
+          const address = s.address ?? s.stationAddress ?? "Address unavailable";
+
+
+          const info = new google.maps.InfoWindow({
+            content: `
+          <div style="font:500 14px Inter,system-ui;max-width:160px;line-height:1.25;">
+            <div style="font-weight:700;margin-bottom:4px;">${s.name}</div>
+            <div style="color:#64748b;font-size:13px;margin-bottom:4px;">${address}</div>
+            <div style="color:#64748b;font-size:13px;margin-bottom:6px;">
+              ${bikes} bikes • ${free} free docks
+            </div>
+            <a href="Register.html"
+               style="display:inline-block;padding:6px 12px;border-radius:999px;background:#111827;color:#fff;text-decoration:none;font-weight:600;font-size:13px;">
+              Info
+            </a>
+          </div>
+        `,
+          });
+
+          marker.addListener("click", () => {
+            infos.forEach((i) => i.close());
+            info.open({ anchor: marker, map });
+            highlightMarker(idx);
+          });
+
+          markers.push(marker);
+          infos.push(info);
+        });
+
+        if (valid > 1) map.fitBounds(bounds);
+        else map.setZoom(11);
+      }
+
+      function renderList() {
+        const list = document.getElementById("stationList");
+        if (list) {
+          list.innerHTML = "";
+        }
+        if (!stations.length) {
+          list.innerHTML =
+            '<div style="color:var(--muted);font-size:12.5px;">No stations.</div>';
+          return;
+        }
+        stations.forEach((s, idx) => {
+          const bikes = Number(s.bikesAvailable ?? 0);
+          const cap = Number(s.capacity ?? 0);
+          const free = Number(s.freeDocks ?? Math.max(cap - bikes, 0));
+
+          const el = document.createElement("div");
+          el.className = "item";
+          el.innerHTML = `
+        <div>
+          <strong>${s.name}</strong>
+          <div class="meta">${bikes} bikes • ${free} free docks</div>
+        </div>
+        <a class="btn primary" href="Register.html" data-index="${idx}">Info</a>
+      `;
+          el.addEventListener("click", (ev) => {
+            if (ev.target.closest("a")) return;
+            focusStation(idx);
+          });
+          list.appendChild(el);
+        });
+      }
+
+      function focusStation(idx) {
+        const s = stations[idx];
+        const pos = { lat: Number(s.lat), lng: Number(s.lon) };
+        map.panTo(pos);
+        map.setZoom(14);
+        infos.forEach((i) => i.close());
+        infos[idx]?.open({ anchor: markers[idx], map });
+        highlightMarker(idx);
+      }
+
+      function highlightMarker(activeIdx) {
+        markers.forEach((m, i) => {
+          const color =
+            i === activeIdx ? "#111827" : colorForStation(stations[i]);
+          m.setIcon({
+            url: markerSvgEncoded(color),
+            scaledSize: new google.maps.Size(32, 42),
+          });
+        });
+      }
+
+      window.initMap = async function () {
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 45.51, lng: -73.58 },
+          zoom: 11,
+          streetViewControl: false,
+          fullscreenControl: false,
+          mapTypeControl: false,
+          styles: LIGHT_STYLE,
+        });
+        geocoder = new google.maps.Geocoder();
+
+        stations = await loadStations();
+        addMarkers();
+        renderList();
+
+        document
+          .getElementById("searchForm")
+          ?.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const q = e.currentTarget
+              .querySelector(".search-input")
+              .value.trim();
+            if (!q || !geocoder) return;
+            geocoder.geocode({ address: q }, (results, status) => {
+              if (status !== "OK" || !results?.length) return;
+              const loc = results[0].geometry.location;
+              map.panTo(loc);
+              map.setZoom(15);
+            });
+          });
+
+      //   // role -> save so Login/Register can read
+      //   const roleSel = document.getElementById("roleSelect");
+      //   const saved = localStorage.getItem("desiredRole");
+      //   if (saved) roleSel.value = saved;
+      //   roleSel.addEventListener("change", () => {
+      //     localStorage.setItem("desiredRole", roleSel.value);
+      //   });
+      // 
+    };
+    </script>
+
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDBKGrjRztQ1CRAdSWw9nOFnttSCrI9Q4A&callback=initMap&v=weekly&loading=async"
+      defer
+    ></script>
+  </body>
 </html>
