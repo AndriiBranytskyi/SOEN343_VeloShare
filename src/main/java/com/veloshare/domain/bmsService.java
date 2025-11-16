@@ -17,154 +17,154 @@ public class bmsService {
     private Map<String, Station> stations = new HashMap<>();
     private TripFactory tripFactory = new TripFactory();
     private RideHistoryDomainModel rideHistory = new RideHistoryDomainModel();
-    
+
     public RideHistoryDomainModel getRideHistory() {
         return rideHistory;
     }
     private String initialConfigPath;
-
 
     public void loadConfig(String filePath) {
         synchronized (lock) {
             // Remember the config path once so reset can reuse it
             if (initialConfigPath == null && filePath != null && !filePath.isBlank()) {
                 initialConfigPath = filePath;
-        }
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            StringBuilder jsonContent = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                jsonContent.append(line.trim());
             }
-            String content = jsonContent.toString();
 
-            // find stations array bounds
-            int stationsKey = content.indexOf("\"stations\"");
-            if (stationsKey < 0) {
-                throw new IllegalStateException("Invalid JSON: missing \"stations\"");
-            }
-            int arrStart = content.indexOf("[", stationsKey);
-            int depth = 0;
-            int arrEnd = -1;
-            for (int i = arrStart; i < content.length(); i++) {
-                char c = content.charAt(i);
-                if (c == '[') {
-                    depth++;
-                } else if (c == ']') {
-                    depth--;
+            try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+                StringBuilder jsonContent = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    jsonContent.append(line.trim());
                 }
-                if (depth == 0) {
-                    arrEnd = i;
-                    break;
+                String content = jsonContent.toString();
+
+                // find stations array bounds
+                int stationsKey = content.indexOf("\"stations\"");
+                if (stationsKey < 0) {
+                    throw new IllegalStateException("Invalid JSON: missing \"stations\"");
                 }
-            }
-            if (arrStart < 0 || arrEnd < 0 || arrEnd <= arrStart) {
-                throw new IllegalStateException("Invalid JSON format for stations[]");
-            }
-
-            String stationsArray = content.substring(arrStart + 1, arrEnd).trim();
-
-            // collect full station objects by matching braces
-            List<String> stationObjs = new ArrayList<>();
-            int objDepth = 0;
-            int start = -1;
-            for (int i = 0; i < stationsArray.length(); i++) {
-                char c = stationsArray.charAt(i);
-                if (c == '{') {
-                    if (objDepth == 0) {
-                        start = i;
+                int arrStart = content.indexOf("[", stationsKey);
+                int depth = 0;
+                int arrEnd = -1;
+                for (int i = arrStart; i < content.length(); i++) {
+                    char c = content.charAt(i);
+                    if (c == '[') {
+                        depth++;
+                    } else if (c == ']') {
+                        depth--;
                     }
-                    objDepth++;
-                } else if (c == '}') {
-                    objDepth--;
-                    if (objDepth == 0 && start >= 0) {
-                        stationObjs.add(stationsArray.substring(start, i + 1));
-                        start = -1;
+                    if (depth == 0) {
+                        arrEnd = i;
+                        break;
                     }
                 }
-            }
-
-            this.stations.clear();
-
-            for (String raw : stationObjs) {
-                // extract station fields
-                String name = findString(raw, "name");
-                String latS = findNumber(raw, "latitude");
-                String lonS = findNumber(raw, "longitude");
-                String capS = findNumber(raw, "capacity");
-                String address = findString(raw, "address");
-                if (name == null || latS == null || lonS == null || capS == null) {
-                    continue;
+                if (arrStart < 0 || arrEnd < 0 || arrEnd <= arrStart) {
+                    throw new IllegalStateException("Invalid JSON format for stations[]");
                 }
 
-                double latitude = Double.parseDouble(latS);
-                double longitude = Double.parseDouble(lonS);
-                int capacity = Integer.parseInt(capS);
+                String stationsArray = content.substring(arrStart + 1, arrEnd).trim();
 
-                Station station = new Station(name, latitude, longitude, capacity, address);
-                stations.put(name, station);
-
-                // extract bikes array inside this station object
-                int bikesIdx = raw.indexOf("\"bikes\"");
-                if (bikesIdx >= 0) {
-                    int bStart = raw.indexOf("[", bikesIdx);
-                    if (bStart > 0) {
-                        int depthB = 0;
-                        int bEnd = -1;
-                        for (int i = bStart; i < raw.length(); i++) {
-                            char c = raw.charAt(i);
-                            if (c == '[') {
-                                depthB++;
-                            } else if (c == ']') {
-                                depthB--;
-                                if (depthB == 0) {
-                                    bEnd = i;
-                                    break;
-                                }
-                            }
+                // collect full station objects by matching braces
+                List<String> stationObjs = new ArrayList<>();
+                int objDepth = 0;
+                int start = -1;
+                for (int i = 0; i < stationsArray.length(); i++) {
+                    char c = stationsArray.charAt(i);
+                    if (c == '{') {
+                        if (objDepth == 0) {
+                            start = i;
                         }
-                        if (bEnd > bStart) {
-                            String bikesArray = raw.substring(bStart + 1, bEnd).trim();
-                            if (!bikesArray.isEmpty()) {
-                                List<String> bikeObjs = new ArrayList<>();
-                                int bikeDepth = 0;
-                                int bObjStart = -1;
-                                for (int i = 0; i < bikesArray.length(); i++) {
-                                    char c = bikesArray.charAt(i);
-                                    if (c == '{') {
-                                        if (bikeDepth == 0) {
-                                            bObjStart = i;
-                                        }
-                                        bikeDepth++;
-                                    } else if (c == '}') {
-                                        bikeDepth--;
-                                        if (bikeDepth == 0 && bObjStart >= 0) {
-                                            bikeObjs.add(bikesArray.substring(bObjStart, i + 1));
-                                            bObjStart = -1;
-                                        }
-                                    }
-                                }
-                                for (String braw : bikeObjs) {
-                                    String id = findString(braw, "id");
-                                    String type = findString(braw, "type");
-                                    if (id != null && !id.isBlank()) {
-                                        addBikeToStation(name, id,
-                                                (type != null && !type.isBlank()) ? type : "standard");
-                                    }
-                                }
-                            }
+                        objDepth++;
+                    } else if (c == '}') {
+                        objDepth--;
+                        if (objDepth == 0 && start >= 0) {
+                            stationObjs.add(stationsArray.substring(start, i + 1));
+                            start = -1;
                         }
                     }
                 }
-            }
 
-            emit(new Event("CONFIG_LOADED", "Configuration loaded from file", "Stations: " + stations.size()));
-        } catch (IOException | NumberFormatException e) {
-            throw new IllegalStateException("Failed to load config file: " + e.getMessage(), e);
+                this.stations.clear();
+
+                for (String raw : stationObjs) {
+                    // extract station fields
+                    String name = findString(raw, "name");
+                    String latS = findNumber(raw, "latitude");
+                    String lonS = findNumber(raw, "longitude");
+                    String capS = findNumber(raw, "capacity");
+                    String address = findString(raw, "address");
+                    if (name == null || latS == null || lonS == null || capS == null) {
+                        continue;
+                    }
+
+                    double latitude = Double.parseDouble(latS);
+                    double longitude = Double.parseDouble(lonS);
+                    int capacity = Integer.parseInt(capS);
+
+                    Station station = new Station(name, latitude, longitude, capacity, address);
+                    stations.put(name, station);
+
+                    // extract bikes array inside this station object
+                    int bikesIdx = raw.indexOf("\"bikes\"");
+                    if (bikesIdx >= 0) {
+                        int bStart = raw.indexOf("[", bikesIdx);
+                        if (bStart > 0) {
+                            int depthB = 0;
+                            int bEnd = -1;
+                            for (int i = bStart; i < raw.length(); i++) {
+                                char c = raw.charAt(i);
+                                if (c == '[') {
+                                    depthB++;
+                                } else if (c == ']') {
+                                    depthB--;
+                                    if (depthB == 0) {
+                                        bEnd = i;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (bEnd > bStart) {
+                                String bikesArray = raw.substring(bStart + 1, bEnd).trim();
+                                if (!bikesArray.isEmpty()) {
+                                    List<String> bikeObjs = new ArrayList<>();
+                                    int bikeDepth = 0;
+                                    int bObjStart = -1;
+                                    for (int i = 0; i < bikesArray.length(); i++) {
+                                        char c = bikesArray.charAt(i);
+                                        if (c == '{') {
+                                            if (bikeDepth == 0) {
+                                                bObjStart = i;
+                                            }
+                                            bikeDepth++;
+                                        } else if (c == '}') {
+                                            bikeDepth--;
+                                            if (bikeDepth == 0 && bObjStart >= 0) {
+                                                bikeObjs.add(bikesArray.substring(bObjStart, i + 1));
+                                                bObjStart = -1;
+                                            }
+                                        }
+                                    }
+                                    for (String braw : bikeObjs) {
+                                        String id = findString(braw, "id");
+                                        String type = findString(braw, "type");
+                                        if (id != null && !id.isBlank()) {
+                                            addBikeToStation(name, id,
+                                                    (type != null && !type.isBlank()) ? type : "standard");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                emit(new Event("CONFIG_LOADED", "Configuration loaded from file", "Stations: " + stations.size()));
+            } catch (IOException | NumberFormatException e) {
+                throw new IllegalStateException("Failed to load config file: " + e.getMessage(), e);
+            }
         }
     }
-}
+
     private static String findString(String obj, String key) {
         String needle = "\"" + key + "\"";
         int k = obj.indexOf(needle);
@@ -234,7 +234,7 @@ public class bmsService {
             throw new IllegalArgumentException("User cannot be null");
         }
         System.out.println("Debug: Checking role for user " + userId + ", role: " + user.getRole());
-        if (user.getRole() != Role.RIDER) {
+        if (user.getRole() != Role.RIDER && user.getRole() != Role.OPERATOR) {
             throw new IllegalAccessException("User " + userId + " is not a Rider");
         }
 
@@ -488,7 +488,9 @@ public class bmsService {
         return activeTrips.get(tripId);
     }
 
-    /** Clears runtime state and reloads the initial config. No external changes. */
+    /**
+     * Clears runtime state and reloads the initial config. No external changes.
+     */
     public void resetToInitial() {
         synchronized (lock) {
             if (initialConfigPath == null) {

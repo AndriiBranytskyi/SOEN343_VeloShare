@@ -16,11 +16,11 @@ public class TripService {
 
     private final bmsService bms;
     private final BillingService billing;
-    private final Map <String,Trip> byId=new ConcurrentHashMap<>();
+    private final Map<String, Trip> byId = new ConcurrentHashMap<>();
 
     public TripService(bmsService bms, BillingService billing) {
         this.bms = bms;
-        this.billing=billing;
+        this.billing = billing;
     }
 
     public Result<String> startTrip(StartTripCmd cmd, User user) {
@@ -35,22 +35,28 @@ public class TripService {
         }
     }
 
-    public Result<Billing> endTripAndBill(EndTripCmd cmd, String userId) {
+    public Result<Billing> endTripAndBill(EndTripCmd cmd, String userId, boolean operatorActingAsRider) {
         try {
             Trip trip = getActiveTrip(cmd.tripId());
-            if (trip == null) return Result.fail("Trip not found");
+            if (trip == null) {
+                return Result.fail("Trip not found");
+            }
 
             Station end = bms.requireStation(cmd.stationName());
             bms.endTrip(cmd.tripId(), end);
 
-            Billing bill = billing.calculateAndStore(userId, trip);  
-          
+            Billing bill = billing.calculateAndStore(userId, trip, operatorActingAsRider);
+
             trip.setCost(bill.getAmountCents() / 100.0);
             bms.getRideHistory().recordCompleted(trip);
             return Result.ok(bill);
         } catch (Exception e) {
             return Result.fail(e.getMessage());
         }
+    }
+
+    public Result<Billing> endTripAndBill(EndTripCmd cmd, String userId) {
+        return endTripAndBill(cmd, userId, false);
     }
 
     private Trip getActiveTrip(String tripId) {

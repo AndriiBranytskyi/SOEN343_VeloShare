@@ -12,6 +12,7 @@ import com.veloshare.api.security.CurrentUserProvider;
 import com.veloshare.application.dto.EndTripCmd;
 import com.veloshare.application.dto.StartTripCmd;
 import com.veloshare.application.usecases.TripService;
+import com.veloshare.domain.Role;
 import com.veloshare.domain.User;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,9 +46,14 @@ public class TripController {
         String id = req.tripId() == null ? "" : req.tripId().trim();
         String station = req.stationName() == null ? "" : req.stationName().trim();
 
-        var r = trips.endTripAndBill(new EndTripCmd(id, station), user.getUserId());
+        String actAs = http.getHeader("X-Act-As");  // "RIDER" or "OPERATOR"
+        boolean operatorActingAsRider
+                = user.getRole() == Role.OPERATOR
+                && "RIDER".equalsIgnoreCase(actAs);
+
+        var r = trips.endTripAndBill(new EndTripCmd(id, station), user.getUserId(), operatorActingAsRider);
         return r.isOk()
-                ? ResponseEntity.ok(r.getValue())           // <-- return Billing JSON
+                ? ResponseEntity.ok(r.getValue()) // <-- return Billing JSON
                 : ResponseEntity.badRequest().body(r.getError());
     }
 

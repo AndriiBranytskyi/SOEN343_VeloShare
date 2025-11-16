@@ -9,12 +9,14 @@ import com.veloshare.application.dto.EndTripCmd;
 import com.veloshare.application.usecases.BillingService;
 import com.veloshare.application.usecases.TripService;
 import com.veloshare.domain.Billing;
-import com.veloshare.domain.User;                         
-import jakarta.servlet.http.HttpServletRequest;           
+import com.veloshare.domain.Role;
+import com.veloshare.domain.User;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/billing")
 public class BillingController {
+
     private final TripService trips;
     private final BillingService billing;
     private final CurrentUserProvider current;
@@ -30,12 +32,24 @@ public class BillingController {
     public ResponseEntity<?> endAndCharge(
             @PathVariable String tripId,
             @RequestParam String endStation,
-            HttpServletRequest http) {                    
+            HttpServletRequest http) {
 
-        String uid = current.requireUser(http).getUserId();  // get UID from the authenticated user
-        Result<Billing> r = trips.endTripAndBill(new EndTripCmd(tripId, endStation), uid);
+        var user = current.requireUser(http);
+        String uid = user.getUserId();
+
+        String actAs = http.getHeader("X-Act-As");
+        boolean operatorActingAsRider
+                = user.getRole() == Role.OPERATOR
+                && "RIDER".equalsIgnoreCase(actAs);
+
+        Result<Billing> r = trips.endTripAndBill(
+                new EndTripCmd(tripId, endStation),
+                uid,
+                operatorActingAsRider
+        );
+
         return r.isOk() ? ResponseEntity.ok(r.getValue())
-                        : ResponseEntity.badRequest().body(r.getError());
+                : ResponseEntity.badRequest().body(r.getError());
     }
 
     @GetMapping("/trips/{tripId}")

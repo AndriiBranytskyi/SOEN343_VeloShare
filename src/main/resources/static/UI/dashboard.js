@@ -48,7 +48,7 @@ export async function endTrip({ tripId, stationName }) {
     body: JSON.stringify({ tripId, stationName }),
   });
   if (!res.ok) throw new Error(await res.text());
-  return await res.json();   // <- bill: { tripId, userId, minutesBilled, amountCents }
+  return await res.json(); // <- bill: { tripId, userId, minutesBilled, amountCents }
 }
 
 export async function cancelReservation(reservationId) {
@@ -118,11 +118,11 @@ export async function setBikeAvailable(bikeId) {
 export async function getProfile() {
   const r = await authFetch("/api/profile");
   if (!r.ok) throw new Error(await r.text());
-  return await r.json(); // { uid, name, role }
+  return await r.json(); // { uid, name, role, canOperate, canRide}
 }
 
 export async function fetchMyBills() {
-  const res = await authFetch('/api/billing/mine');
+  const res = await authFetch("/api/billing/mine");
   if (!res.ok) throw new Error(await res.text());
   return await res.json();
 }

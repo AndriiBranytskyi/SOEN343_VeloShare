@@ -513,9 +513,26 @@
               <h2 class="title">Dashboard</h2>
               <p class="muted" id="dashSubtitle">Loading profile…</p>
             </div>
-            <div class="user-pill" id="userPill" style="display: none">
-              <span id="userName">@user</span>
-              <span id="userRole" class="role-pill">rider</span>
+            <div style="display: flex; align-items: center; gap: 8px">
+              <div class="user-pill" id="userPill" style="display: none">
+                <span id="userName">@user</span>
+                <span id="userRole" class="role-pill">rider</span>
+              </div>
+
+              <!-- view toggle for dual-role users -->
+              <select
+                id="roleMode"
+                class="input"
+                style="
+                  max-width: 150px;
+                  display: none;
+                  height: 32px;
+                  padding: 4px 8px;
+                "
+              >
+                <option value="rider">Rider view</option>
+                <option value="operator">Operator view</option>
+              </select>
             </div>
           </div>
 
@@ -672,9 +689,13 @@
                   ><button class="button" id="btnBikeAvail">Avail</button>
                 </div>
                 <div class="row">
-                  <div class="field" style="max-width:110px">
+                  <div class="field" style="max-width: 110px">
                     <label class="label">&nbsp;</label>
-                    <button class="button" id="btnReloadStations" data-role="operator">
+                    <button
+                      class="button"
+                      id="btnReloadStations"
+                      data-role="operator"
+                    >
                       Reset stations
                     </button>
                   </div>
@@ -870,12 +891,16 @@
           const std =
             (typeof s.standardBikes === "number"
               ? s.standardBikes
-              : bikeList.filter((b) => String(b.type).toLowerCase() === "standard").length) || 0;
+              : bikeList.filter(
+                  (b) => String(b.type).toLowerCase() === "standard"
+                ).length) || 0;
 
           const eb =
             (typeof s.eBikes === "number"
               ? s.eBikes
-              : bikeList.filter((b) => String(b.type).toLowerCase() === "e-bike").length) || 0;
+              : bikeList.filter(
+                  (b) => String(b.type).toLowerCase() === "e-bike"
+                ).length) || 0;
 
           grid.innerHTML = `
           <div class="det-subtitle">Bikes</div>
@@ -896,7 +921,10 @@
 
           // simple esc to avoid injecting raw HTML for bike ids
           const esc = (str) =>
-            String(str ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+            String(str ?? "")
+              .replaceAll("&", "&amp;")
+              .replaceAll("<", "&lt;")
+              .replaceAll(">", "&gt;");
 
           // bike for dock: prefer explicit docksData, then try bikes carrying dock info,
           // otherwise, use positional assignment when docksData is absent (use first 'present' slots)
@@ -946,11 +974,20 @@
             for (let i = 0; i < cap; i++) {
               const bike = bikeForDock(i);
               const occupied = !!bike;
-              const bikeId = bike?.id || bike?.bikeId || bike?.name || (occupied ? "bike" : "—");
+              const bikeId =
+                bike?.id ||
+                bike?.bikeId ||
+                bike?.name ||
+                (occupied ? "bike" : "—");
               const btype = bike?.type ? String(bike.type).toLowerCase() : "";
-              const isEb = btype.includes("e") || btype.includes("ebike") || btype.includes("e-bike");
+              const isEb =
+                btype.includes("e") ||
+                btype.includes("ebike") ||
+                btype.includes("e-bike");
               const statusBadge = occupied
-                ? `<span class="badge ${isEb ? "badge-ebike" : "badge-standard"}">Occupied</span>`
+                ? `<span class="badge ${
+                    isEb ? "badge-ebike" : "badge-standard"
+                  }">Occupied</span>`
                 : `<span class="badge badge-empty">Free</span>`;
               const typeCell = occupied ? (isEb ? "E" : "S") : "—";
 
@@ -966,7 +1003,7 @@
             // replace grid contents (do not append)
             grid.innerHTML = html;
             // if you prefer to replace rather than append, use:
-            // grid.innerHTML = html; 
+            // grid.innerHTML = html;
           }
 
           empty.style.display = cap ? "none" : "block";
@@ -1093,9 +1130,12 @@
               if (el) el.value = s.name;
             });
             try {
-              const det = await fetch(`/api/stations/${encodeURIComponent(s.name)}`, {
-                cache: "no-store",
-              });
+              const det = await fetch(
+                `/api/stations/${encodeURIComponent(s.name)}`,
+                {
+                  cache: "no-store",
+                }
+              );
               drawer.open(det.ok ? await det.json() : s);
             } catch {
               drawer.open(s);
@@ -1105,12 +1145,11 @@
 
         if (!bounds.isEmpty()) map.fitBounds(bounds);
       }
-
-
     </script>
 
     <script
       async
+      defer
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDBKGrjRztQ1CRAdSWw9nOFnttSCrI9Q4A&callback=initMap"
     ></script>
 
@@ -1187,9 +1226,93 @@
         $("#opsBlock").style.display = show ? "block" : "none";
       };
 
+      const roleModeSel = document.getElementById("roleMode");
+      if (roleModeSel) {
+        roleModeSel.onchange = () => {
+          currentViewMode = roleModeSel.value; //"rider" | "operator"
+          window.currentViewMode = currentViewMode;
+          updateViewForMode();
+        };
+      }
+
+      let currentViewMode = "rider"; // "rider" | "operator"
+      let currentProfile = null; // { uid, name, role, canRide, canOperate }
+
+      window.currentViewMode = currentViewMode;
+      window.currentProfile = currentProfile;
+
+      function updateViewForMode() {
+        const modeSelect = document.getElementById("roleMode");
+        const userRoleEl = document.getElementById("userRole");
+        const subtitleEl = document.getElementById("dashSubtitle");
+
+        //if not signed in yet
+        if (!currentProfile) {
+          if (modeSelect) modeSelect.style.display = "none";
+          if (userRoleEl) userRoleEl.textContent = "guest";
+          if (subtitleEl) subtitleEl.textContent = "Sign in to unlock actions.";
+          showRider(false);
+          showOps(false);
+          return;
+        }
+
+        const roleRaw = (currentProfile.role || "RIDER").toUpperCase();
+        const canOperate =
+          typeof currentProfile.canOperate === "boolean"
+            ? currentProfile.canOperate
+            : roleRaw === "OPERATOR";
+        const canRide =
+          typeof currentProfile.canRide === "boolean"
+            ? currentProfile.canRide
+            : true;
+
+        //if they cannot operate rider mode is forced
+        if (!canOperate) {
+          currentViewMode = "rider";
+          window.currentViewMode = currentViewMode;
+        }
+
+        //toggle
+        if (modeSelect) {
+          if (canOperate) {
+            modeSelect.style.display = "inline-block";
+            modeSelect.value = currentViewMode;
+          } else {
+            modeSelect.style.display = "none";
+          }
+        }
+
+        //show rider actions only in rider view
+        showRider(canRide && currentViewMode === "rider");
+
+        //show operator block only when in operator mode & allowed to operate
+        showOps(canOperate && currentViewMode === "operator");
+
+        //role pill text
+        if (userRoleEl) {
+          if (!canOperate) {
+            userRoleEl.textContent = "rider";
+          } else {
+            userRoleEl.textContent =
+              currentViewMode === "operator" ? "operator" : "rider (dual)";
+          }
+        }
+
+        if (subtitleEl) {
+          if (!canOperate) {
+            subtitleEl.textContent = "Rider tools enabled.";
+          } else if (currentViewMode === "operator") {
+            subtitleEl.textContent = "Operator tools enabled.";
+          } else {
+            subtitleEl.textContent = "Rider tools enabled (dual-role user).";
+          }
+        }
+      }
+
       auth.onAuthStateChanged(async (u) => {
         if (u) {
           $("#userPill").style.display = "flex";
+
           let displayName;
           try {
             displayName = await getCurrentUsername();
@@ -1199,26 +1322,46 @@
           $("#userName").textContent = displayName;
 
           try {
-            const me = await getProfile();
-            const role = (me.role || "rider").toLowerCase();
-            $("#userRole").textContent = role;
-            $("#dashSubtitle").textContent =
-              role === "operator"
-                ? "Operator tools enabled."
-                : "Rider tools enabled.";
-            showRider(role !== "operator");
-            showOps(role === "operator");
+            const me = await getProfile(); // { uid, name, role, canRide?, canOperate? }
+            currentProfile = me;
+            window.currentProfile = me;
+
+            //default mode: operator view if they can operate, otherwise rider
+            const roleRaw = (me.role || "RIDER").toUpperCase();
+            const canOperate =
+              typeof me.canOperate === "boolean"
+                ? me.canOperate
+                : roleRaw === "OPERATOR";
+
+            currentViewMode = canOperate ? "operator" : "rider";
+            window.currentViewMode = currentViewMode;
+
+            updateViewForMode();
           } catch {
+            currentProfile = null;
+            window.currentProfile = null;
+            currentViewMode = "rider";
+            window.currentViewMode = currentViewMode;
+
             $("#dashSubtitle").textContent =
               "Profile missing, default to rider.";
             showRider(true);
             showOps(false);
           }
         } else {
+          //signed out
           $("#userPill").style.display = "none";
           $("#dashSubtitle").textContent = "Sign in to unlock actions.";
           showRider(false);
           showOps(false);
+
+          currentProfile = null;
+          window.currentProfile = null;
+          currentViewMode = "rider";
+          window.currentViewMode = currentViewMode;
+
+          const modeSelect = document.getElementById("roleMode");
+          if (modeSelect) modeSelect.style.display = "none";
         }
       });
 
@@ -1337,21 +1480,26 @@
         }
       };
       $("#btnEndTrip").onclick = async () => {
-      try {
-        const tripId = $("#tripId").value.trim();
-        const stationName = $("#endStation").value.trim();
+        try {
+          const tripId = $("#tripId").value.trim();
+          const stationName = $("#endStation").value.trim();
 
-        const bill = await endTrip({ tripId, stationName });   
-        log(
-          `Trip ended — billed $${(bill.amountCents / 100).toFixed(2)} for ${bill.minutesBilled} min`
-        );
-        // Open the billing popup (or so the real payment modal shows.
-        const billingPath =
-          (location.pathname.includes('/UI/') ? '/UI/billing.html' : '/billing.html');
+          const bill = await endTrip({ tripId, stationName });
+          log(
+            `Trip ended — billed $${(bill.amountCents / 100).toFixed(2)} for ${
+              bill.minutesBilled
+            } min`
+          );
+          // Open the billing popup (or so the real payment modal shows.
+          const billingPath = location.pathname.includes("/UI/")
+            ? "/UI/billing.html"
+            : "/billing.html";
 
-        const url = `${billingPath}?tripId=${encodeURIComponent(tripId)}&endStation=${encodeURIComponent(stationName)}`;
+          const url = `${billingPath}?tripId=${encodeURIComponent(
+            tripId
+          )}&endStation=${encodeURIComponent(stationName)}`;
 
-        window.open(url, 'veloBilling', 'width=560,height=720,noopener');
+          window.open(url, "veloBilling", "width=560,height=720,noopener");
 
           //where bike was taken from
           if (currentTripStartStation) {
@@ -1567,8 +1715,8 @@
           btnReloadStations.disabled = true;
           try {
             log("Resetting system…");
-            await resetSystem();      // server resets in-memory state to initial
-            await reloadStations();   // re-fetch /api/stations and rebuild markers
+            await resetSystem(); // server resets in-memory state to initial
+            await reloadStations(); // re-fetch /api/stations and rebuild markers
             map.getDiv().style.opacity = "0.7";
             setTimeout(() => (map.getDiv().style.opacity = "1"), 400);
             log("Reset complete.");
@@ -1580,7 +1728,6 @@
           }
         };
       }
-
 
       const btnLogout = document.getElementById("btnLogout");
       if (btnLogout) {
