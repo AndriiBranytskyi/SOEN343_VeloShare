@@ -221,15 +221,36 @@
         headers: { 'Content-Type': 'application/json' }
       });
 
+        if (!resp.ok) {
+        throw new Error(await resp.text());
+      }
+
+      const bill = await resp.json();
+
+      const base = (bill.baseAmountCents ?? bill.amountCents) / 100;
+      const finalAmt = bill.amountCents / 100;
+      const flexUsed = (bill.flexUsedCents ?? 0) / 100;
+
+      const origin = bill.originStation || 'Unknown start';
+      const dest = bill.arrivalStation || endStation || 'Unknown end';
+      const mins = bill.minutesBilled ?? '—';
+
       // shpw success message (simulation)
-      $('#summary').innerHTML = `
-        <div style="font-size:16px; font-weight:700; color:#16a34a;">Payment Successful!</div>
-        <div class="fine" style="margin-top:8px;">
-          Thank you for riding with VeloShare. Your saved payment method has been charged.
-        </div>`;
-      show(receipt);
-      show(okbar);
-    } catch (e) {
+          $('#summary').innerHTML = `
+      <div style="font-size:16px; font-weight:700; color:#16a34a;">Payment Successful!</div>
+      <div class="fine" style="margin-top:8px;">
+        Trip <b>${escapeHtml(bill.tripId)}</b> — ${escapeHtml(origin)} → ${escapeHtml(dest)}<br/>
+        Duration: <b>${mins}</b> min
+      </div>
+      <div class="fine" style="margin-top:10px;">
+        Base amount: $${base.toFixed(2)}<br/>
+        Flex dollars applied: -$${flexUsed.toFixed(2)}<br/>
+        <span style="font-weight:700;">Amount charged: $${finalAmt.toFixed(2)}</span>
+      </div>
+    `;
+    show(receipt);
+    show(okbar);
+  } catch (e) {
       // fallback (just in case)
       $('#summary').innerHTML = `
         <div style="font-size:16px; font-weight:700; color:#16a34a;">Payment Successful!</div>

@@ -136,6 +136,7 @@
         <a class="ghost btn" href="pricing.html">Pricing</a>
         <a class="ghost btn" href="billing.html">Billing</a>
         <a class="ghost btn" href="history.html">Ride History</a>
+        <a class="ghost btn" href="account.html">Account</a>
         <a class="btn" id="btnLogout" href="HomePage.html">Sign out</a>
       </div>
     </nav>
@@ -358,6 +359,20 @@
            }</td>
          `;
           tr.onclick = async () => {
+
+            const finalCents = details.billingFinal != null
+          ? Math.round(details.billingFinal * 100)
+          : cost; // fallback to old cost
+
+        const baseCents = details.billingBase != null
+          ? Math.round(details.billingBase * 100)
+          : finalCents;
+
+        const flexCents = details.billingFlexUsed != null
+          ? Math.round(details.billingFlexUsed * 100)
+          : 0;
+
+
             $detailsContent.innerHTML = `
              <div class="details-row"><span class="label">Trip ID</span><span>${
                details.tripId
@@ -378,6 +393,15 @@
              <div class="details-row"><span class="label">Cost</span><span>${fmtMoney(
                cost
              )}</span></div>
+             <div class="details-row">
+              <span class="label">Base Cost</span><span>${fmtMoney(baseCents)}</span>
+            </div>
+            <div class="details-row">
+              <span class="label">Flex Used</span><span>-${fmtMoney(flexCents)}</span>
+            </div>
+            <div class="details-row">
+              <span class="label">Final Cost</span><span>${fmtMoney(finalCents)}</span>
+            </div>
              <div class="details-row"><span class="label">Ended</span><span>${
                details.endTime ? fmtEnded(details.endTime) : "-"
              }</span></div>

@@ -306,7 +306,10 @@ public class bmsService {
         if (endStation.isOutOfService()) {
             throw new IllegalStateException("Station " + endStation.getName() + " is out of service");
         }
-
+        int bikesBefore = endStation.getBikesAvailable();
+        int cap = endStation.getCapacity();
+        boolean belowMinBefore = cap > 0 && ((double) bikesBefore / (double) cap) < 0.25;
+        
         Dock dock = endStation.getDocks().stream()
                 .filter(d -> d.getStatus() == DockStatus.FREE)
                 .findFirst()

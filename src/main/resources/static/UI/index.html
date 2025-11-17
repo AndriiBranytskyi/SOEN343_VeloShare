@@ -500,6 +500,7 @@
         <a href="pricing.html" class="btn ghost">Pricing</a>
         <a href="billing.html" class="btn ghost">Billing</a>
         <a href="history.html" class="btn ghost">Ride History</a>
+        <a href="account.html" class="btn ghost">Account</a>
         <button id="btnLogout" class="btn primary">Sign out</button>
       </div>
     </nav>
@@ -1485,11 +1486,21 @@
           const stationName = $("#endStation").value.trim();
 
           const bill = await endTrip({ tripId, stationName });
-          log(
-            `Trip ended — billed $${(bill.amountCents / 100).toFixed(2)} for ${
-              bill.minutesBilled
-            } min`
-          );
+          const base = (bill.baseAmountCents ?? bill.amountCents) / 100;
+          const finalAmt = bill.amountCents / 100;
+          const flexUsed = (bill.flexUsedCents ?? 0) / 100;
+
+          if (flexUsed > 0) {
+            log(
+              `Trip ended — base $${base.toFixed(2)}, flex dollars applied $${flexUsed.toFixed(
+                2
+              )}, you paid $${finalAmt.toFixed(2)} for ${bill.minutesBilled} min`
+            );
+          } else {
+            log(
+              `Trip ended — billed $${finalAmt.toFixed(2)} for ${bill.minutesBilled} min`
+            );
+          }
           // Open the billing popup (or so the real payment modal shows.
           const billingPath = location.pathname.includes("/UI/")
             ? "/UI/billing.html"

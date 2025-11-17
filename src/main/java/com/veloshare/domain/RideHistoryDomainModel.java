@@ -1,5 +1,5 @@
 package com.veloshare.domain;
-
+import static java.util.Map.entry;
 import java.util.*;
 
 public class RideHistoryDomainModel {
@@ -43,16 +43,29 @@ public class RideHistoryDomainModel {
         if (t == null) return null;
         long minutes = Math.max(1, (long)Math.ceil(t.getDurationMillis()/60000.0));
         String type = t.getBike()!=null ? t.getBike().getType() : "standard";
-        return Map.of(
-            "tripId", t.getTripId(),
-            "rider", t.getUserId(),
-            "startStation", t.getStartStation()!=null?t.getStartStation().getName():"-",
-            "endStation", t.getEndStation()!=null?t.getEndStation().getName():"-",
-            "startTime", t.getStartTime(),
-            "endTime", t.getEndTime(),
-            "durationMinutes", minutes,
-            "bikeType", type,
-            "billing", t.getCost()
-        );
-    }
+
+        double finalCost = t.getCost();          
+        double baseCost  = t.getBaseCost();      
+        double flexUsed  = t.getFlexUsed(); 
+
+
+    Map<String, Object> details = Map.ofEntries(
+        entry("tripId", t.getTripId()),
+        entry("rider", t.getUserId()),
+        entry("startStation", t.getStartStation()!=null ? t.getStartStation().getName() : "-"),
+        entry("endStation", t.getEndStation()!=null ? t.getEndStation().getName() : "-"),
+        entry("startTime", t.getStartTime()),
+        entry("endTime", t.getEndTime()),
+        entry("durationMinutes", minutes),
+        entry("bikeType", type),
+        entry("billing", finalCost),
+        entry("billingFinal", finalCost),
+        entry("billingBase", baseCost),
+        entry("billingFlexUsed", flexUsed)
+    );
+
+    System.out.println("DETAILS = " + details);
+
+    return details;
+        }
 }
