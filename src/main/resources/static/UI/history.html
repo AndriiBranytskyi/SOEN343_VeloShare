@@ -189,6 +189,7 @@
                 <th>Route</th>
                 <th>Bike Type</th>
                 <th class="right">Cost</th>
+				<th class="right">Started</th>
                 <th class="right">Ended</th>
               </tr>
             </thead>
@@ -354,6 +355,7 @@
           )}</td>
            <td>${details.bikeType || "standard"}</td>
            <td class="right">${fmtMoney(cost)}</td>
+		   <td class="right">${details.startTime ? fmtEnded(details.startTime) : "-"}</td>
            <td class="right">${
              details.endTime ? fmtEnded(details.endTime) : "-"
            }</td>
@@ -402,6 +404,7 @@
             <div class="details-row">
               <span class="label">Final Cost</span><span>${fmtMoney(finalCents)}</span>
             </div>
+			<div class="details-row"><span class="label">Started</span><span>${details.startTime ? fmtEnded(details.startTime) : "-"}</span></div>
              <div class="details-row"><span class="label">Ended</span><span>${
                details.endTime ? fmtEnded(details.endTime) : "-"
              }</span></div>
