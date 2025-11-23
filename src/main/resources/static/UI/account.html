@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>VeloShare — Account</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        /* Palette */
+        --bg: #f6f8fb;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --blue: #0ea5e9;
+        --border: rgba(15, 23, 42, 0.12);
+        --panel: #fff;
+
+        /* Layout + effects */
+        --radius: 10px;
+        --gap: 12px;
+        --shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+
+        /* Status tints */
+        --t-green: rgba(34, 197, 94, 0.12);
+        --t-amber: rgba(249, 115, 22, 0.12);
+        --t-red: rgba(239, 68, 68, 0.12);
+
+        /* Brand */
+        --primary: #0ea5e9;
+        --primary-ink: #fff;
+        --surface: #fff;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial,
+          sans-serif;
+      }
+
+      /* TOP NAV BAR */
+      .navbar {
+        background: #fff;
+        border-bottom: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 18px;
+      }
+
+      .brand {
+        font-weight: 800;
+        font-size: 18px;
+        color: var(--ink);
+        text-decoration: none;
+        letter-spacing: -0.01em;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn {
+        font-family: "Inter", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 6px 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s, opacity 0.15s;
+      }
+      .btn.primary {
+        background: var(--primary);
+        color: var(--primary-ink);
+        border: 1px solid var(--primary);
+        text-decoration: none;
+      }
+      .btn.primary:hover {
+        opacity: 0.9;
+      }
+      .btn.ghost {
+        background: black;
+        color: white;
+        text-decoration: none;
+      }
+      .btn.ghost:hover {
+        background: rgba(255, 255, 255, 0.799);
+        color: black;
+        border: 1px solid black;
+      }
+
+      /* LAYOUT */
+      .page {
+        height: calc(100vh - 56px);
+        display: grid;
+        grid-template-columns: minmax(340px, 520px) minmax(0, 1fr);
+        gap: var(--gap);
+        padding: var(--gap);
+      }
+      @media (max-width: 960px) {
+        .page {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto auto;
+        }
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .hero {
+        background: #6ba8f7;
+        color: #fff;
+        padding: 12px 14px;
+      }
+      .hero h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+      }
+      .hero p {
+        margin: 4px 0 0;
+        font-size: 13px;
+        opacity: 0.95;
+      }
+
+      .dash {
+        padding: 14px;
+        overflow: auto;
+      }
+
+      .title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+
+      .user-pill {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        padding: 4px 10px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-size: 12.5px;
+        background: #fff;
+      }
+      .user-pill-name {
+        font-weight: 600;
+      }
+
+      .badge {
+        font-size: 12px;
+        border-radius: 999px;
+        padding: 3px 8px;
+        display: inline-block;
+        border: 1px solid var(--border);
+      }
+
+      .account-section {
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        margin-bottom: 10px;
+        background: #f9fafb;
+      }
+      .account-section h3 {
+        margin: 0 0 4px;
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .account-section p {
+        margin: 2px 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .stat-row {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin-top: 6px;
+      }
+      .stat-label {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .stat-value {
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .subtext {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+
+      .pill-entry {
+        background: rgba(14, 165, 233, 0.12);
+      }
+
+      #roleSection {
+        margin-top: 6px;
+      }
+      #roleSelect {
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        padding: 6px 8px;
+        font-size: 13px;
+        font-family: "Inter", sans-serif;
+      }
+
+      /* Right side helper card */
+      .info-list {
+        padding: 14px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .info-list h3 {
+        margin: 0 0 6px;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .info-list ul {
+        margin: 6px 0 0;
+        padding-left: 18px;
+      }
+      .info-list li {
+        margin-bottom: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- TOP NAVIGATION BAR (matches index.html) -->
+    <nav class="navbar">
+      <a href="HomePage.html" class="brand">Veloshare</a>
+      <div class="nav-links">
+        <a href="pricing.html" class="btn ghost">Pricing</a>
+        <a href="billing.html" class="btn ghost">Billing</a>
+        <a href="history.html" class="btn ghost">Ride History</a>
+        <a href="index.html" class="btn ghost">Dashboard</a>
+        <button id="btnLogout" class="btn primary">Sign out</button>
+      </div>
+    </nav>
+
+    <div class="page">
+      <!-- LEFT: Account details -->
+      <section class="card">
+        <div class="hero">
+          <h2>Account</h2>
+          <p>View your loyalty tier, flex dollars, and role.</p>
+        </div>
+        <div class="dash">
+          <div class="title-row">
+            <div>
+              <div class="muted" style="font-size: 12px">Signed in as</div>
+              <div class="user-pill" id="userPill" style="margin-top: 4px">
+                <span class="user-pill-name" id="userName">@user</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loyalty -->
+          <section class="account-section">
+            <h3>Loyalty program</h3>
+            <div class="stat-row">
+              <span class="stat-label">Current tier</span>
+              <span id="loyaltyBadge" class="badge pill-entry">Entry</span>
+            </div>
+            <!-- <p class="subtext">
+              Loyalty rewards are not fully implemented yet. All users are on
+              the Entry tier for now.
+            </p> -->
+          </section>
+
+          <!-- Flex dollars -->
+          <section class="account-section">
+            <h3>Flex dollars</h3>
+            <div class="stat-row">
+              <span class="stat-label">Balance</span>
+              <span class="stat-value"
+                ><span id="flexBalance">0.00</span></span
+              >
+            </div>
+            <!-- <p class="subtext">
+              Flex dollars are earned by returning bikes to under-served
+              stations and are automatically applied to future trips and
+              reservations.
+            </p> -->
+          </section>
+
+          <!-- Role toggle (for dual-role users, stub-ready) -->
+          <section class="account-section" id="roleSection" style="display: none">
+            <h3>Active role</h3>
+            <select id="roleSelect"></select>
+          </section>
+        </div>
+      </section>
+
+      <!-- RIGHT: Info / explanation -->
+      <section class="card">
+        <div class="hero">
+          <h2>How flex dollars work</h2>
+        </div>
+        <div class="info-list">
+          <h3>Earning flex dollars</h3>
+          <ul>
+            <li>
+              Return a bike to a station that is below 25% capacity to earn flex
+              dollars.
+            </li>
+            <li>
+              Flex dollars accumulate on your account and do not expire.
+            </li>
+          </ul>
+
+          <h3 style="margin-top: 10px">Using flex dollars</h3>
+          <ul>
+            <li>
+              Flex dollars are automatically applied to your next trip or
+              reservation.
+            </li>
+            <li>
+              If you don’t have enough flex dollars to cover the full cost, the
+              remainder is billed normally.
+            </li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <!-- firebase + auth + account logic -->
+    <script type="module" src="./firebase.js"></script>
+    <script type="module" src="./auth.js"></script>
+    <script type="module">
+      import { auth } from "./firebase.js";
+      import { getCurrentUsername } from "./auth.js";
+
+      const $ = (s) => document.querySelector(s);
+
+      auth.onAuthStateChanged(async (u) => {
+        if (!u) {
+          // if not signed in, go back to home / login
+          window.location.href = "HomePage.html";
+          return;
+        }
+
+        // show user name
+        try {
+          const displayName = (await getCurrentUsername()) || u.email || u.uid;
+          $("#userName").textContent = displayName;
+        } catch {
+          $("#userName").textContent = u.email || u.uid;
+        }
+
+        // load account info from backend
+        loadAccountInfo(u.uid);
+      });
+
+      async function loadAccountInfo(userId) {
+        try {
+          const resp = await fetch(`/api/account/${userId}`, {
+            cache: "no-store",
+          });
+          if (!resp.ok) throw new Error("Failed to load account info");
+          const data = await resp.json();
+
+          // loyalty
+          const badge = document.getElementById("loyaltyBadge");
+          if (badge) {
+            badge.textContent = data.loyaltyTier || "Entry";
+          }
+
+          // flex dollars
+          const flexElem = document.getElementById("flexBalance");
+          if (flexElem) {
+            const value =
+              typeof data.flexDollars === "number"
+                ? data.flexDollars
+                : parseFloat(data.flexDollars || "0");
+            flexElem.textContent = value.toFixed(2);
+          }
+
+          // roles
+          const roles = data.roles || [];
+          const activeRole = data.activeRole || roles[0] || null;
+          setupRoleSection(roles, activeRole);
+        } catch (e) {
+          console.error(e);
+          alert("Could not load account information.");
+        }
+      }
+
+      function setupRoleSection(roles, activeRole) {
+        const section = document.getElementById("roleSection");
+        const select = document.getElementById("roleSelect");
+        if (!section || !select) return;
+
+        if (!roles || roles.length === 0) {
+          section.style.display = "none";
+          return;
+        }
+
+        section.style.display = "block";
+        select.innerHTML = "";
+
+        roles.forEach((role) => {
+          const opt = document.createElement("option");
+          opt.value = role;
+          opt.textContent =
+            role === role.toLowerCase()
+              ? role.charAt(0).toUpperCase() + role.slice(1)
+              : role;
+          if (role === activeRole) opt.selected = true;
+          select.appendChild(opt);
+        });
+
+        select.addEventListener("change", () => {
+          const newRole = select.value;
+          console.log("Role changed to:", newRole);
+          // Later: POST to backend to persist active role
+        });
+      }
+
+      // sign out
+      const btnLogout = document.getElementById("btnLogout");
+      if (btnLogout) {
+        btnLogout.onclick = async () => {
+          try {
+            await auth.signOut();
+            window.location.href = "HomePage.html";
+          } catch (e) {
+            console.error("Logout failed:", e);
+          }
+        };
+      }
+    </script>
+  </body>
+</html>

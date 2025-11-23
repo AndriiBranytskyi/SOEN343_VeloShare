@@ -4,7 +4,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.google.api.Billing;
 import com.veloshare.application.usecases.OperatorService;
 import com.veloshare.application.usecases.ReservationService;
 import com.veloshare.application.usecases.RideHistoryService;
@@ -15,6 +14,7 @@ import com.veloshare.domain.RideHistoryAdapter;
 import com.veloshare.domain.Role;
 import com.veloshare.domain.bmsService;
 import com.veloshare.application.usecases.BillingService;
+import com.veloshare.application.usecases.LoyaltyService;
 
 //bean is an object managed by Spring that helps provide domain to Spring framework
 @Configuration
@@ -41,9 +41,11 @@ public class Beans {
     }
 
     @Bean
-    public TripService tripService(bmsService bms, BillingService billing) {
-        return new TripService(bms,billing);
-    }
+    public TripService tripService(bmsService bms,
+                               BillingService billing,
+                               LoyaltyService loyalty) {
+    return new TripService(bms, billing, loyalty);
+}
 
     @Bean
     public OperatorService operatorService(bmsService bms) {
@@ -89,6 +91,11 @@ public class Beans {
     public RideHistoryService rideHistoryService(bmsService bms) {
         // Wrap the bmsService with the adapter
         return new RideHistoryService(new RideHistoryAdapter(bms));
+    }
+
+    @Bean
+    public LoyaltyService loyaltyService(bmsService bms) {
+        return new LoyaltyService(new RideHistoryAdapter(bms));
     }
 
 }

@@ -78,4 +78,14 @@ public class Station {
         return outOfService;
     }
 
+    public double getFillRatio() {
+        if (capacity == 0) {
+            return 1.0; 
+        }
+        return (double) getBikesAvailable() / (double) capacity;
+    }
+
+    public boolean isBelowMinimumCapacity() {
+        return getFillRatio() < 0.25;
+    }
 }

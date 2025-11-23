@@ -21,6 +21,10 @@ public class Billing {
     private final int minutesBilled;
     private final int amountCents;
 
+    // flex details
+    private int baseAmountCents;
+    private int flexUsedCents;
+    
     // payment details
     private String paymentId;
 
@@ -82,4 +86,20 @@ public class Billing {
     public void setPaymentId(String paymentId) {
         this.paymentId = paymentId;
     }
+    public int getBaseAmountCents() {
+        return baseAmountCents;
+    }
+
+    public void setBaseAmountCents(int baseAmountCents) {
+        this.baseAmountCents = baseAmountCents;
+    }
+
+    public int getFlexUsedCents() {
+        return flexUsedCents;
+    }
+
+    public void setFlexUsedCents(int flexUsedCents) {
+        this.flexUsedCents = flexUsedCents;
+    }
 }
+
