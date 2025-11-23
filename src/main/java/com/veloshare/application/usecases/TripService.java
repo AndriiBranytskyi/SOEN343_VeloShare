@@ -11,16 +11,21 @@ import com.veloshare.domain.Trip;
 import com.veloshare.domain.User;
 import com.veloshare.domain.bmsService;
 import com.veloshare.domain.Billing;
+import com.veloshare.domain.LoyaltyTier;
+import com.veloshare.application.usecases.BillingService;
+import com.veloshare.application.usecases.LoyaltyService;
 
 public class TripService {
 
     private final bmsService bms;
     private final BillingService billing;
     private final Map<String, Trip> byId = new ConcurrentHashMap<>();
+    private final LoyaltyService loyalty;
 
-    public TripService(bmsService bms, BillingService billing) {
+    public TripService(bmsService bms, BillingService billing, LoyaltyService loyalty) {
         this.bms = bms;
         this.billing = billing;
+        this.loyalty = loyalty;
     }
 
     public Result<String> startTrip(StartTripCmd cmd, User user) {
@@ -35,7 +40,8 @@ public class TripService {
         }
     }
 
-    public Result<Billing> endTripAndBill(EndTripCmd cmd, String userId, boolean operatorActingAsRider) {
+    public Result<Billing> endTripAndBill(EndTripCmd cmd, User user, boolean operatorActingAsRider) {
+        String userId=user.getUserId();
         try {
             Trip trip = getActiveTrip(cmd.tripId());
             if (trip == null) {
@@ -60,7 +66,8 @@ public class TripService {
             System.out.println("Flex dollars awarded to user " + userId
                 + " (+ " + BillingService.FLEX_DOLLAR_BONUS + ")");
         }
-            Billing bill = billing.calculateAndStore(userId, trip, operatorActingAsRider);
+            LoyaltyTier tier = loyalty.computeTier(user);
+            Billing bill = billing.calculateAndStore(userId, trip, operatorActingAsRider,tier);
 
             double finalDollars = bill.getAmountCents() / 100.0;
             double baseDollars  = bill.getBaseAmountCents() / 100.0;
@@ -78,8 +85,8 @@ public class TripService {
         }
     }
 
-    public Result<Billing> endTripAndBill(EndTripCmd cmd, String userId) {
-        return endTripAndBill(cmd, userId, false);
+    public Result<Billing> endTripAndBill(EndTripCmd cmd, User user) {
+        return endTripAndBill(cmd, user, false);
     }
 
     private Trip getActiveTrip(String tripId) {

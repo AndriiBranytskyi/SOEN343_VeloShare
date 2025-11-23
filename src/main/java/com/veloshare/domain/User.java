@@ -11,6 +11,7 @@ public class User {
     private Role role;
     private List<Trip> trips;
     private double flexDollars;
+    private LoyaltyTier tier;
 
     public User(String userId, String name, Role role) {
         this.userId = userId;
@@ -19,6 +20,7 @@ public class User {
         this.role = role;
         this.trips = new ArrayList<>();
         this.flexDollars = 0.0;
+        this.tier= LoyaltyTier.NONE;
     }
 
     public String getUserId() {
@@ -64,5 +66,11 @@ public class User {
         double usable = Math.min(flexDollars, cost);
         flexDollars -= usable;        
         return cost - usable;
+    }
+    public LoyaltyTier getTier() {
+        return tier;
+    }
+    public void setTier(LoyaltyTier tier) {
+        this.tier = tier;
     }
 }

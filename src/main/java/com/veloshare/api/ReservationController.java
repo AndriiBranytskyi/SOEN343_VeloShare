@@ -1,39 +1,56 @@
 package com.veloshare.api;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.veloshare.api.security.CurrentUserProvider;
 import com.veloshare.application.dto.ReserveBikeCmd;
 import com.veloshare.application.usecases.ReservationService;
+import com.veloshare.application.usecases.LoyaltyService;
+import com.veloshare.domain.LoyaltyTier;
+import com.veloshare.domain.Role;
+import com.veloshare.domain.User;
 
 @RestController
 @RequestMapping("/api/reservations")
 public class ReservationController {
 
     private final ReservationService reservations;
-    private final CurrentUserProvider current;
+    private final LoyaltyService loyalty;
 
-    public ReservationController(ReservationService reservations, CurrentUserProvider current) {
+    public ReservationController(ReservationService reservations,
+                                 LoyaltyService loyalty) {
         this.reservations = reservations;
-        this.current = current;
+        this.loyalty = loyalty;
     }
 
     @PostMapping
     public ResponseEntity<?> reserve(@RequestBody ReserveBikeReq req) {
-        var r = reservations.reserve(new ReserveBikeCmd(req.userId(), req.bikeId(), req.stationName(), req.minutes()));
-        return r.isOk() ? ResponseEntity.ok().build() : ResponseEntity.badRequest().body(r.getError());
+        User user = new User(req.userId(), "Temp", Role.RIDER);
+
+        // Compute loyalty tier
+        LoyaltyTier tier = loyalty.computeTier(user);
+
+        int extraMinutes =
+                (tier == LoyaltyTier.GOLD)   ? 5 :
+                (tier == LoyaltyTier.SILVER) ? 2 :
+                                               0;
+
+        int totalMinutes = req.minutes() + extraMinutes;
+
+        var r = reservations.reserve(
+                new ReserveBikeCmd(req.userId(), req.bikeId(), req.stationName(), totalMinutes)
+        );
+
+        return r.isOk()
+                ? ResponseEntity.ok().build()
+                : ResponseEntity.badRequest().body(r.getError());
     }
 
     @DeleteMapping("/{reservationId}")
     public ResponseEntity<?> cancel(@PathVariable String reservationId) {
         var r = reservations.cancel(reservationId);
-        return r.isOk() ? ResponseEntity.noContent().build()
+        return r.isOk()
+                ? ResponseEntity.noContent().build()
                 : ResponseEntity.badRequest().body(r.getError());
     }
 }

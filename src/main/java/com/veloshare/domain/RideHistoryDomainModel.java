@@ -5,9 +5,28 @@ import java.util.*;
 public class RideHistoryDomainModel {
     private final Map<String, Trip> completed = new HashMap<>();
 
+    private final List<Trip> trips=new ArrayList<>();
+    private final List<ReservationEvent> claimedReservations = new ArrayList<>();
+    private final List<ReservationEvent> missedReservations = new ArrayList<>();
+
+    private static class ReservationEvent {
+    String userId;
+    String reservationId;
+    Date when;
+    boolean claimed;
+
+    ReservationEvent(String userId, String reservationId, Date when, boolean claimed) {
+        this.userId = userId;
+        this.reservationId = reservationId;
+        this.when = when;
+        this.claimed = claimed;
+    }
+}
+
     public void recordCompleted(Trip trip) {
         if (trip != null && trip.getTripId() != null && trip.getEndTime() != null) {
             completed.put(trip.getTripId(), trip);
+            trips.add(trip);  // <-- IMPORTANT: add to list used by countTrips
         }
     }
 
@@ -68,4 +87,37 @@ public class RideHistoryDomainModel {
 
     return details;
         }
+
+        public void recordClaimedReservation(String userId, String reservationId, Date when) {
+            claimedReservations.add(new ReservationEvent(userId, reservationId, when, true));
+        }
+        
+        public void recordMissedReservation(String userId, String reservationId, Date when) {
+            missedReservations.add(new ReservationEvent(userId, reservationId, when, false));
+        }
+        
+        public int countTrips(String userId, Date from, Date to) {
+            return (int) trips.stream()
+                    .filter(t -> t.getUserId().equals(userId))
+                    .filter(t -> {
+                        Date s = t.getStartTime();
+                        return s != null && !s.before(from) && !s.after(to);
+                    })
+                    .count();
+        }
+        
+        public int countClaimedReservations(String userId, Date from, Date to) {
+            return (int) claimedReservations.stream()
+                    .filter(e -> e.userId.equals(userId))
+                    .filter(e -> !e.when.before(from) && !e.when.after(to))
+                    .count();
+        }
+        
+        public int countMissedReservations(String userId, Date from, Date to) {
+            return (int) missedReservations.stream()
+                    .filter(e -> e.userId.equals(userId))
+                    .filter(e -> !e.when.before(from) && !e.when.after(to))
+                    .count();
+        }
+
 }

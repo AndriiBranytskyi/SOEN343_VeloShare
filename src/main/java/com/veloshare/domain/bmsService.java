@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -220,6 +221,11 @@ public class bmsService {
             reservation.checkExpiry();
             if (!reservation.isValid()) {
                 emit(new Event("RESERVATION_EXPIRY", "Reservation expired", "Reservation ID: " + reservation.getReservationId()));
+                getRideHistory().recordMissedReservation(
+                    reservation.getUserId(),
+                    reservation.getReservationId(),
+                    new Date()
+            );
                 cancelReservation(reservation.getReservationId());
             }
         }
@@ -246,6 +252,12 @@ public class bmsService {
         if (existingReservation != null) {
             existingReservation.setActive(false); // Mark as consumed
             emit(new Event("RESERVATION_CANCELLED", "Reservation consumed for trip start", "Reservation ID: " + existingReservation.getReservationId()));
+
+            getRideHistory().recordClaimedReservation(
+                existingReservation.getUserId(),
+                existingReservation.getReservationId(),
+                new Date()
+        );
         }
 
         if (startStation.isOutOfService()) {
@@ -376,6 +388,11 @@ public class bmsService {
         }
         activeReservations.remove(reservationId);
         emit(new Event("RESERVATION_CANCELLED", "Reservation cancelled", "Reservation ID: " + reservationId));
+        rideHistory.recordMissedReservation(
+            reservation.getUserId(),
+            reservationId,
+            new Date()
+        );
     }
 
     public void moveBike(String bikeId, Station fromStation, Station toStation, User user) throws IllegalAccessException {

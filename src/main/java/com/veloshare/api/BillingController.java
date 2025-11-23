@@ -43,10 +43,10 @@ public class BillingController {
                 && "RIDER".equalsIgnoreCase(actAs);
 
         Result<Billing> r = trips.endTripAndBill(
-                new EndTripCmd(tripId, endStation),
-                uid,
-                operatorActingAsRider
-        );
+            new EndTripCmd(tripId, endStation),
+            user,
+            operatorActingAsRider
+            );
 
         return r.isOk() ? ResponseEntity.ok(r.getValue())
                 : ResponseEntity.badRequest().body(r.getError());
