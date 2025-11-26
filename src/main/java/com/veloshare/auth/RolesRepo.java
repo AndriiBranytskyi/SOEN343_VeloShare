@@ -35,7 +35,7 @@ public class RolesRepo {
                 }
             }
 
-            System.out.println("✅ Loaded operators from roles.json: " + roles.keySet());
+            System.out.println("Loaded operators from roles.json: " + roles.keySet());
         } catch (IOException e) {
             System.err.println("Failed to load roles.json: " + e.getMessage());
         }

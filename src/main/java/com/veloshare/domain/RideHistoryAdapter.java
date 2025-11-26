@@ -1,6 +1,8 @@
 package com.veloshare.domain;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 public class RideHistoryAdapter implements RideHistoryClient {
     private final bmsService bms;
@@ -20,5 +22,22 @@ public class RideHistoryAdapter implements RideHistoryClient {
     @Override
     public Map<String,Object> getDetails(String tripId, User user) {
         return bms.getRideHistory().getDetails(tripId, user);
+    }
+
+    // loyalty helper methods
+
+    @Override
+    public int countTrips(String userId, Date from, Date to) {
+        return bms.getRideHistory().countTrips(userId, from, to);
+    }
+
+    @Override
+    public int countClaimedReservations(String userId, Date from, Date to) {
+        return bms.getRideHistory().countClaimedReservations(userId, from, to);
+    }
+
+    @Override
+    public int countMissedReservations(String userId, Date from, Date to) {
+        return bms.getRideHistory().countMissedReservations(userId, from, to);
     }
 }

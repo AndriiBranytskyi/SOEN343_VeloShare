@@ -14,6 +14,8 @@ public class Trip {
     private double cost;
     private double distanceKM;
     private boolean isActive;
+    private double baseCost;      
+    private double flexUsed;
     private Bike bike;
 
     public Trip(String tripId, String bikeId, String userId, Station startStation, double cost, double distanceKM, Bike bike) {
@@ -26,6 +28,7 @@ public class Trip {
         this.startTime = new Date();
         this.isActive = true;
         this.bike = bike;
+        
     }
 
     public String getTripId() {
@@ -74,6 +77,21 @@ public class Trip {
 
     public void setBike(Bike bike) {
         this.bike = bike;
+    }
+    public double getBaseCost() {
+    return baseCost;
+}
+
+    public void setBaseCost(double baseCost) {
+        this.baseCost = baseCost;
+    }
+
+    public double getFlexUsed() {
+        return flexUsed;
+    }
+
+    public void setFlexUsed(double flexUsed) {
+        this.flexUsed = flexUsed;
     }
 
     public void endTrip(Station endStation) {

@@ -7,6 +7,7 @@ public class Bike {
     private String id;
     private String type;
     private BikeState state;
+    
 
     public Bike(String id, String type) {
         this.id = id;

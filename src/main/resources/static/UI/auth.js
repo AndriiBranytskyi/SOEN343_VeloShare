@@ -235,6 +235,11 @@ export async function authFetch(url, options = {}) {
     ...(options.headers || {}),
     Authorization: `Bearer ${token}`,
   };
+  const mode = (window.currentViewMode || "").toUpperCase();
+  if (mode === "RIDER" || mode === "OPERATOR") {
+    headers["X-Act-As"] = mode;
+  }
+
   return fetch(url, { ...options, headers });
 }
 

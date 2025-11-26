@@ -12,6 +12,7 @@ import com.veloshare.api.security.CurrentUserProvider;
 import com.veloshare.application.dto.EndTripCmd;
 import com.veloshare.application.dto.StartTripCmd;
 import com.veloshare.application.usecases.TripService;
+import com.veloshare.domain.Role;
 import com.veloshare.domain.User;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,24 +32,43 @@ public class TripController {
     @PostMapping("/start")
     public ResponseEntity<?> start(@RequestBody StartTripReq req, HttpServletRequest http) {
         User user = currentUser.requireUser(http);
-        var r = trips.startTrip(new StartTripCmd(user.getUserId(), req.bikeId(), req.stationName(),
-                req.estimatedCost(), req.estimatedDistance()), user);
+
+        var r = trips.startTrip(
+                new StartTripCmd(
+                        user.getUserId(),
+                        req.bikeId(),
+                        req.stationName(),
+                        req.estimatedCost(),
+                        req.estimatedDistance()
+                ),
+                user
+        );
+
         return r.isOk()
                 ? ResponseEntity.ok(Map.of("tripId", r.getValue()))
                 : ResponseEntity.badRequest().body(r.getError());
-
     }
 
     @PostMapping("/end")
     public ResponseEntity<?> end(@RequestBody EndTripReq req, HttpServletRequest http) {
-        var user = currentUser.requireUser(http);
+        User user = currentUser.requireUser(http);
+
         String id = req.tripId() == null ? "" : req.tripId().trim();
         String station = req.stationName() == null ? "" : req.stationName().trim();
 
-        var r = trips.endTripAndBill(new EndTripCmd(id, station), user.getUserId());
+        String actAs = http.getHeader("X-Act-As");
+        boolean operatorActingAsRider =
+                user.getRole() == Role.OPERATOR &&
+                "RIDER".equalsIgnoreCase(actAs);
+
+        var r = trips.endTripAndBill(
+                new EndTripCmd(id, station),
+                user,
+                operatorActingAsRider
+        );
+
         return r.isOk()
-                ? ResponseEntity.ok(r.getValue())           // <-- return Billing JSON
+                ? ResponseEntity.ok(r.getValue())
                 : ResponseEntity.badRequest().body(r.getError());
     }
-
 }
