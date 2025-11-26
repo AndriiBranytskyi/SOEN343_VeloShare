@@ -1474,6 +1474,18 @@
           updateTripStatus();
 
           await refreshStation(stationName);
+
+		  const endData = stationCache.get(currentTripStartStation);
+		  const present =
+		    Number.isFinite(endData?.bikesAvailable)
+		      ? Number(endData.bikesAvailable)
+		      : Array.isArray(endData?.bikes)
+		      ? endData.bikes.length
+		      : 0;
+		  if (currentProfile.role === "OPERATOR" && present === 0) {
+		    log(`"${currentTripStartStation}" is now empty.`);
+		  }
+		  
         } catch (e) {
           log("Start failed: " + e.message);
         } finally {
@@ -1532,16 +1544,6 @@
                 .toString()
                 .padStart(2, "0")} sec`
             );
-			const endData = stationCache.get(currentTripStartStation);
-			const present =
-			  Number.isFinite(endData?.bikesAvailable)
-			    ? Number(endData.bikesAvailable)
-			    : Array.isArray(endData?.bikes)
-			    ? endData.bikes.length
-			    : 0;
-			if (currentProfile.role === "OPERATOR" && present === 0) {
-			  log(`"${currentTripStartStation}" is now empty.`);
-			}
           }
 
           currentTripId = null;
